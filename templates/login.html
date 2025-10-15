@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Login - Green Tara</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #0a8a43, #066d34);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .login-container {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      overflow: hidden;
+      max-width: 420px;
+      width: 100%;
+      animation: slideIn 0.4s ease;
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .login-header {
+      background: linear-gradient(135deg, #0a8a43, #066d34);
+      padding: 40px 30px;
+      text-align: center;
+      color: white;
+    }
+
+    .login-header h1 {
+      font-size: 28px;
+      margin-bottom: 5px;
+    }
+
+    .login-header p {
+      opacity: 0.9;
+      font-size: 14px;
+    }
+
+    .login-body {
+      padding: 40px 30px;
+    }
+
+    .form-group {
+      margin-bottom: 24px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      color: #333;
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 12px 16px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 15px;
+      transition: all 0.3s;
+      font-family: inherit;
+    }
+
+    .form-group input:focus {
+      outline: none;
+      border-color: #0a8a43;
+      box-shadow: 0 0 0 3px rgba(10,138,67,0.1);
+    }
+
+    .form-group input::placeholder {
+      color: #999;
+    }
+
+    .login-btn {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #0a8a43, #066d34);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .login-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(10,138,67,0.3);
+    }
+
+    .login-btn:active {
+      transform: translateY(0);
+    }
+
+    .login-btn:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .alert {
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      font-size: 14px;
+      animation: slideDown 0.3s ease;
+    }
+
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .alert-error {
+      background: #fee;
+      color: #c33;
+      border: 1px solid #fcc;
+    }
+
+    .alert-success {
+      background: #efe;
+      color: #3c3;
+      border: 1px solid #cfc;
+    }
+
+    .default-credentials {
+      background: #f0f8f5;
+      border: 1px solid #0a8a43;
+      border-radius: 8px;
+      padding: 16px;
+      margin-top: 20px;
+      font-size: 13px;
+      color: #333;
+    }
+
+    .default-credentials h4 {
+      color: #0a8a43;
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+
+    .default-credentials code {
+      background: white;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: 'Courier New', monospace;
+      color: #0a8a43;
+    }
+
+    .loading-spinner {
+      display: none;
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .login-btn.loading .btn-text { display: none; }
+    .login-btn.loading .loading-spinner { display: block; }
+
+    @media (max-width: 480px) {
+      .login-header { padding: 30px 20px; }
+      .login-body { padding: 30px 20px; }
+      .login-header h1 { font-size: 24px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <div class="login-header">
+      <h1>🌿 Green Tara</h1>
+      <p>Admin Dashboard Login</p>
+    </div>
+
+    <div class="login-body">
+      <div id="alertContainer"></div>
+
+      <form id="loginForm">
+        <div class="form-group">
+          <label for="username">Username</label>
+          <input 
+            type="text" 
+            id="username" 
+            name="username" 
+            placeholder="Enter your username"
+            required
+            autocomplete="username"
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input 
+            type="password" 
+            id="password" 
+            name="password" 
+            placeholder="Enter your password"
+            required
+            autocomplete="current-password"
+          >
+        </div>
+
+        <button type="submit" class="login-btn" id="loginBtn">
+          <span class="btn-text">Login to Dashboard</span>
+          <div class="loading-spinner"></div>
+        </button>
+      </form>
+
+      <div class="default-credentials">
+        <h4>🔑 Default Login Credentials</h4>
+        <p><strong>Username:</strong> <code>admin</code></p>
+        <p style="margin-top: 4px;"><strong>Password:</strong> <code>admin123</code></p>
+        <p style="margin-top: 8px; font-size: 12px; color: #666;">
+          ⚠️ Please change these credentials after first login
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = 'http://localhost:3000/api';
+
+    const loginForm = document.getElementById('loginForm');
+    const loginBtn = document.getElementById('loginBtn');
+    const alertContainer = document.getElementById('alertContainer');
+
+    function showAlert(message, type = 'error') {
+      alertContainer.innerHTML = `
+        <div class="alert alert-${type}">
+          ${type === 'error' ? '❌' : '✅'} ${message}
+        </div>
+      `;
+
+      if (type === 'success') {
+        setTimeout(() => {
+          window.location.href = 'admin.html';
+        }, 1000);
+      }
+    }
+
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+
+      // Show loading state
+      loginBtn.classList.add('loading');
+      loginBtn.disabled = true;
+      alertContainer.innerHTML = '';
+
+      try {
+        const response = await fetch(`${API_URL}/admin/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ username, password })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          showAlert('Login successful! Redirecting...', 'success');
+        } else {
+          showAlert(data.error || 'Login failed. Please check your credentials.');
+          loginBtn.classList.remove('loading');
+          loginBtn.disabled = false;
+        }
+      } catch (error) {
+        console.error('Login error:', error);
+        showAlert('Unable to connect to server. Please make sure the backend is running.');
+        loginBtn.classList.remove('loading');
+        loginBtn.disabled = false;
+      }
+    });
+
+    // Check if already logged in
+    async function checkAuth() {
+      try {
+        const response = await fetch(`${API_URL}/admin/check`, {
+          credentials: 'include'
+        });
+        const data = await response.json();
+        
+        if (data.authenticated) {
+          window.location.href = 'admin.html';
+        }
+      } catch (error) {
+        console.error('Auth check error:', error);
+      }
+    }
+
+    checkAuth();
+  </script>
+</body>
+</html>
