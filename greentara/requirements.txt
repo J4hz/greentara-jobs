@@ -1,0 +1,12 @@
+setuptools==69.0.0
+wheel==0.42.0
+gunicorn==21.2.0
+Django==4.2.7
+django-cors-headers==4.3.1
+whitenoise==6.6.0
+psycopg2-binary==2.9.9
+python-decouple==3.8
+Pillow==10.1.0
+dj-database-url==2.1.0
+djangorestframework==3.15.0
+djangorestframework-simplejwt==6.3.0
