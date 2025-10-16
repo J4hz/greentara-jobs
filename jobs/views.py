@@ -518,3 +518,10 @@ from django.http import HttpResponse
 
 def home(request):
     return HttpResponse("<h1>Welcome to Green Tara Jobs!</h1>")
+from django.shortcuts import render
+
+def index(request):
+    return render(request, 'index.html')
+
+def admin_dashboard(request):
+    return render(request, 'admin.html')
