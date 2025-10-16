@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Green Tara – Jobs</title>
+
+  <style>
+    :root{
+      --green: #0a8a43;
+      --green-dark: #066d34;
+      --bg: #f9fdf9;
+      --card-shadow: rgba(10,10,10,0.08);
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      color:#222;
+      background: var(--bg);
+      -webkit-font-smoothing:antialiased;
+      scroll-behavior:smooth;
+    }
+
+    header{
+      position:fixed;
+      top:0;
+      left:0;
+      right:0;
+      background:var(--green);
+      color:#fff;
+      padding:12px 32px;
+      z-index:1200;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+    }
+    nav{display:flex;align-items:center;justify-content:space-between;gap:16px}
+    nav h1{font-size:20px;margin:0;font-weight:600}
+    nav ul{list-style:none;display:flex;gap:18px;margin:0;padding:0}
+    nav a{color:#fff;text-decoration:none;font-weight:500;opacity:.95}
+    nav a:hover{opacity:1;text-decoration:underline}
+
+    .hero{
+      padding:120px 28px 40px;
+      text-align:center;
+    }
+    .hero h2{margin:0;font-size:2.4rem;color:var(--green)}
+    .hero p{margin:12px 0 0;color:#555;font-size:1rem}
+
+    .jobs{
+      padding:40px 28px 80px;
+      max-width:1200px;
+      margin:0 auto;
+    }
+    .jobs h2{color:var(--green);margin-bottom:26px;font-size:1.8rem;text-align:center}
+
+    .job-grid{
+      display:grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap:28px;
+      align-items:start;
+    }
+
+    .job-card{
+      background:#fff;
+      border-radius:14px;
+      padding:20px;
+      box-shadow: 0 6px 18px var(--card-shadow);
+      transition: transform .22s ease, box-shadow .22s ease;
+      display:flex;
+      flex-direction:column;
+      align-items:flex-start;
+      gap:8px;
+      cursor:pointer;
+    }
+    .job-card:hover{ transform: translateY(-8px); box-shadow: 0 12px 30px rgba(0,0,0,0.12); }
+
+    .job-card img{ width:56px; height:56px; object-fit:contain; border-radius:8px; background:linear-gradient(180deg,#f3f7f3,#ffffff); padding:6px }
+    .job-card h3{ margin:6px 0 0; color:var(--green); font-size:1.05rem }
+    .meta{ color:#444; font-size:0.95rem; margin-top:6px; }
+    .meta small{ display:block; color:#666; font-size:.88rem; margin-top:6px }
+
+    .card-actions{ margin-top:auto; width:100%; display:flex; gap:10px; align-items:center; justify-content:flex-end }
+    .view-btn{
+      background:var(--green);
+      color:#fff;
+      border:none;
+      padding:9px 14px;
+      border-radius:8px;
+      cursor:pointer;
+      font-weight:600;
+      transition:.18s;
+    }
+    .view-btn:hover{ background:var(--green-dark) }
+
+    .loading{
+      text-align:center;
+      padding:40px;
+      color:#666;
+      font-size:1.1rem;
+    }
+
+    footer{ text-align:center; padding:20px 12px; color:#fff; background:var(--green); margin-top:30px; border-top-left-radius:8px; border-top-right-radius:8px }
+
+    .modal {
+      display:none;
+      position:fixed;
+      inset:0;
+      z-index:2000;
+      align-items:center;
+      justify-content:center;
+      background: rgba(0,0,0,0.55);
+      backdrop-filter: blur(4px);
+      padding:24px;
+    }
+
+    .modal[aria-hidden="false"]{ display:flex; }
+
+    .modal-card{
+      width:100%;
+      max-width:560px;
+      border-radius:14px;
+      overflow:hidden;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+      animation: modalIn .28s cubic-bezier(.2,.9,.3,1);
+    }
+
+    @keyframes modalIn{
+      from { opacity:0; transform: translateY(18px) scale(.995); }
+      to   { opacity:1; transform: translateY(0) scale(1); }
+    }
+
+    .modal-header{
+      padding:18px 20px;
+      background: linear-gradient(135deg, #0a8a43 0%, #088a3f 100%);
+      color:#fff;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+
+    .modal-header h3{ margin:0; font-size:1.05rem; font-weight:700; }
+    .modal-close{
+      background:transparent;
+      border:none;
+      color:rgba(255,255,255,0.95);
+      font-size:20px;
+      cursor:pointer;
+      padding:8px;
+      border-radius:8px;
+    }
+    .modal-close:hover{ background: rgba(255,255,255,0.15) }
+
+    .modal-body{
+      padding:20px;
+      background: #ffffff;
+      color:#333;
+      line-height:1.6;
+      font-size:0.97rem;
+      max-height: 70vh;
+      overflow-y: auto;
+    }
+
+    .modal-body p{ margin:10px 0; color:#555 }
+    .modal-body .strong{ color:#0a8a43; font-weight:700; display:block; margin-top:14px; margin-bottom:4px }
+
+    .modal-footer{
+      padding:18px 20px;
+      display:flex;
+      gap:10px;
+      align-items:center;
+      justify-content:flex-end;
+      background: #f8f9fa;
+      border-top: 1px solid #e9ecef;
+    }
+
+    .apply-btn{
+      background: linear-gradient(90deg, #0a8a43, #066d34);
+      color:#fff;
+      border:none;
+      padding:10px 16px;
+      border-radius:10px;
+      cursor:pointer;
+      font-weight:700;
+      box-shadow: 0 6px 18px rgba(6,109,52,0.18);
+      transition: transform .12s ease;
+    }
+    .apply-btn:active{ transform: translateY(1px); }
+
+    .cancel-btn{
+      background:#fff;
+      color:#666;
+      border:1px solid #ddd;
+      padding:9px 14px;
+      border-radius:10px;
+      cursor:pointer;
+      transition: .18s;
+    }
+    .cancel-btn:hover{ background:#f8f9fa; border-color:#bbb }
+
+    .form-group{
+      margin-bottom:16px;
+    }
+
+    .form-group label{
+      display:block;
+      color:#0a8a43;
+      font-weight:600;
+      margin-bottom:6px;
+      font-size:0.9rem;
+    }
+
+    .form-group input,
+    .form-group select{
+      width:100%;
+      padding:10px 12px;
+      border:1px solid #ddd;
+      border-radius:8px;
+      font-size:0.95rem;
+      font-family:inherit;
+      transition: border-color .2s;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus{
+      outline:none;
+      border-color:#0a8a43;
+      box-shadow: 0 0 0 3px rgba(10,138,67,0.1);
+    }
+
+    .form-row{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:12px;
+    }
+
+    @media (max-width:768px){
+      .form-row{ grid-template-columns: 1fr; }
+      nav ul{ gap:12px; font-size:0.9rem; }
+      header{ padding:12px 20px; }
+      .jobs{ padding:40px 20px; }
+      .job-grid{ grid-template-columns: 1fr; gap:20px; }
+    }
+
+    @media (max-width:520px){
+      .modal-card{ max-width:95%; margin:12px }
+      .hero h2{ font-size:1.7rem }
+      nav h1{ font-size:18px; }
+      .modal-body{ max-height: 60vh; padding:16px; }
+      .modal-footer{ flex-direction:column; gap:8px; }
+      .modal-footer button{ width:100%; }
+      .hero{ padding:100px 20px 30px; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <nav>
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <img id="siteLogo" src="" alt="" style="height: 40px; display: none; object-fit: contain;">
+        <h1 id="siteName">Green Tara</h1>
+      </div>
+      <ul>
+        <li><a href="#home">Home</a></li>
+        <li><a href="#jobs">Jobs</a></li>
+        <li><a href="#about">About</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <section id="home" class="hero">
+      <h2 id="heroTitle">Connecting Kenyans to trusted job opportunities</h2>
+      <p id="heroSubtitle">Browse verified listings locally and in Qatar. Click any job to view details.</p>
+    </section>
+
+    <section id="jobs" class="jobs">
+      <h2>Available Jobs</h2>
+      
+      <div style="max-width: 600px; margin: 0 auto 30px;">
+        <div style="position: relative;">
+          <input 
+            type="text" 
+            id="jobSearch" 
+            placeholder="🔍 Search jobs by title, location, or keywords..." 
+            style="width: 100%; padding: 14px 20px; border: 2px solid #e0e0e0; border-radius: 50px; font-size: 15px;"
+            onkeyup="searchJobs()"
+          >
+        </div>
+        <p id="searchResults" style="text-align: center; color: #666; margin-top: 10px; font-size: 14px;"></p>
+      </div>
+
+      <div id="jobsContainer" class="job-grid">
+        <div class="loading">Loading jobs...</div>
+      </div>
+    </section>
+
+    <section id="about" class="jobs">
+      <h2>About Green Tara</h2>
+      <p id="aboutText" style="max-width:700px;margin:12px auto;color:#444;text-align:center">
+        Green Tara helps job seekers connect to verified opportunities with dignity and transparency.
+      </p>
+    </section>
+
+    <section id="contact" class="jobs">
+      <h2>Contact</h2>
+      <p style="max-width:600px;margin:12px auto;color:#444;text-align:center">
+        <strong style="color:#0a8a43">Email:</strong> <span id="contactEmail">info@greentara.co.ke</span><br>
+        <strong style="color:#0a8a43">Phone:</strong> <span id="contactPhone">+254 700 123 456</span>
+      </p>
+    </section>
+  </main>
+
+  <footer>
+    © 2025 <span id="footerName">Green Tara</span> – All rights reserved
+  </footer>
+
+  <div id="jobModal" class="modal" aria-hidden="true">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="modalTitle"></h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body" id="modalBody"></div>
+      <div class="modal-footer" id="modalFooter">
+        <button class="cancel-btn" type="button">Close</button>
+        <button class="apply-btn" type="button" id="applyBtn">Apply Now</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = '/api';  // CHANGED: Django serves from same domain
+
+    let currentJob = null;
+    let allJobs = [];
+
+    function renderJobs(jobs) {
+      const container = document.getElementById('jobsContainer');
+      
+      if (!jobs || jobs.length === 0) {
+        container.innerHTML = '<div class="loading">No jobs available at the moment.</div>';
+        return;
+      }
+
+      container.innerHTML = jobs.map(job => {
+        const isExpired = job.expiry_date && new Date(job.expiry_date) < new Date();
+        const expiryDate = job.expiry_date ? new Date(job.expiry_date) : null;
+        const daysLeft = expiryDate ? Math.ceil((expiryDate - new Date()) / (1000 * 60 * 60 * 24)) : null;
+        
+        let expiryBadge = '';
+        if (isExpired) {
+          expiryBadge = '<div style="background: #dc3545; color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; display: inline-block; margin-top: 8px;">❌ Expired</div>';
+        } else if (daysLeft !== null && daysLeft <= 7) {
+          expiryBadge = `<div style="background: #ff9800; color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; display: inline-block; margin-top: 8px;">⏰ ${daysLeft} days left</div>`;
+        }
+
+        return `
+        <article class="job-card ${isExpired ? 'expired-job' : ''}" data-job-id="${job.id}" style="${isExpired ? 'opacity: 0.6;' : ''}">
+          <img src="${job.icon}" alt="" />
+          <h3>${job.title}</h3>
+          <div class="meta"><strong>Location:</strong> ${job.location}</div>
+          <div class="meta"><strong>Salary:</strong> ${job.salary}</div>
+          <small>Contract: ${job.contract}</small>
+          ${expiryBadge}
+          <div class="card-actions">
+            <button class="view-btn" ${isExpired ? 'disabled' : ''}>
+              ${isExpired ? 'Expired' : 'View Details'}
+            </button>
+          </div>
+        </article>
+      `;
+      }).join('');
+
+      container.querySelectorAll('.job-card:not(.expired-job)').forEach(card => {
+        card.addEventListener('click', () => {
+          const jobId = parseInt(card.dataset.jobId);
+          const job = jobs.find(j => j.id === jobId);
+          if (job) openModal(job);
+        });
+      });
+    }
+
+    async function loadJobs() {
+      try {
+        const response = await fetch(`${API_URL}/jobs?active_only=true`);
+        if (response.ok) {
+          const jobs = await response.json();
+          allJobs = jobs;
+          renderJobs(jobs);
+        }
+      } catch (error) {
+        console.error('Error loading jobs:', error);
+      }
+    }
+
+    function searchJobs() {
+      const searchTerm = document.getElementById('jobSearch').value.toLowerCase();
+      
+      if (searchTerm) {
+        const filtered = allJobs.filter(job => 
+          job.title.toLowerCase().includes(searchTerm) ||
+          job.location.toLowerCase().includes(searchTerm) ||
+          (job.description && job.description.toLowerCase().includes(searchTerm))
+        );
+        renderJobs(filtered);
+        document.getElementById('searchResults').textContent = `Showing ${filtered.length} of ${allJobs.length} jobs`;
+      } else {
+        renderJobs(allJobs);
+        document.getElementById('searchResults').textContent = `${allJobs.length} jobs available`;
+      }
+    }
+
+    async function loadSiteContent() {
+      try {
+        const response = await fetch(`${API_URL}/content`);
+        if (response.ok) {
+          const content = await response.json();
+          
+          if (content.site_name) {
+            document.getElementById('siteName').textContent = content.site_name;
+            document.getElementById('footerName').textContent = content.site_name;
+          }
+          if (content.hero_title) document.getElementById('heroTitle').textContent = content.hero_title;
+          if (content.hero_subtitle) document.getElementById('heroSubtitle').textContent = content.hero_subtitle;
+          if (content.about_text) document.getElementById('aboutText').textContent = content.about_text;
+          if (content.contact_email) document.getElementById('contactEmail').textContent = content.contact_email;
+          if (content.contact_phone) document.getElementById('contactPhone').textContent = content.contact_phone;
+          if (content.site_logo) {
+            const logoImg = document.getElementById('siteLogo');
+            logoImg.src = content.site_logo;  // CHANGED: Removed localhost prefix
+            logoImg.style.display = 'block';
+          }
+        }
+      } catch (error) {
+        console.log('Using default content');
+      }
+    }
+
+    function openModal(job) {
+      currentJob = job;
+      const modal = document.getElementById('jobModal');
+      const modalTitle = document.getElementById('modalTitle');
+      const modalBody = document.getElementById('modalBody');
+
+      modalTitle.textContent = job.title;
+      
+      let workplacePhotosHTML = '';
+      if (job.workplace_photos) {
+        try {
+          const photos = JSON.parse(job.workplace_photos);
+          if (photos && photos.length > 0) {
+            workplacePhotosHTML = `
+              <span class="strong">Workplace Photos</span>
+              <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; margin: 10px 0 20px 0;">
+                ${photos.map(photo => `
+                  <img src="${photo}" alt="Workplace" style="width: 100%; height: 120px; object-fit: cover; border-radius: 8px; border: 2px solid #e0e0e0;">
+                `).join('')}
+              </div>
+            `;
+          }
+        } catch (e) {
+          console.error('Error parsing photos:', e);
+        }
+      }
+
+      modalBody.innerHTML = `
+        <span class="strong">Location</span>
+        <p>${job.location}</p>
+        <span class="strong">Salary</span>
+        <p>${job.salary} (Contract: ${job.contract})</p>
+        ${workplacePhotosHTML}
+        <span class="strong">Description</span>
+        <p>${job.description}</p>
+        <span class="strong">Responsibilities</span>
+        <p>${job.responsibilities}</p>
+        <span class="strong">Requirements</span>
+        <p>${job.requirements}</p>
+        <span class="strong">Benefits</span>
+        <p>${job.benefits}</p>
+      `;
+
+      modal.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal() {
+      const modal = document.getElementById('jobModal');
+      modal.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+      currentJob = null;
+    }
+
+    function showApplicationForm() {
+      if (!currentJob) return;
+
+      const modalBody = document.getElementById('modalBody');
+      const modalFooter = document.getElementById('modalFooter');
+      
+      modalBody.innerHTML = `
+        <form class="application-form" id="applicationForm">
+          <h4 style="color:#0a8a43; margin-top:0">Apply for ${currentJob.title}</h4>
+          
+          <div class="form-group">
+            <label for="fullName">Full Name *</label>
+            <input type="text" id="fullName" required placeholder="Enter your full name">
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="email">Email Address *</label>
+              <input type="email" id="email" required placeholder="your.email@example.com" onblur="checkPreviousApplication()">
+            </div>
+            
+            <div class="form-group">
+              <label for="phone">Phone Number *</label>
+              <input type="tel" id="phone" required placeholder="+254 700 000 000">
+            </div>
+          </div>
+
+          <div id="duplicateWarning" style="display:none; background:#fff3cd; border:1px solid #ffc107; padding:12px; border-radius:8px; margin:10px 0; color:#856404;">
+            <strong>⚠️ Notice:</strong> <span id="duplicateMessage"></span>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="age">Age *</label>
+              <input type="number" id="age" required min="18" max="65" placeholder="18">
+            </div>
+            
+            <div class="form-group">
+              <label for="gender">Gender *</label>
+              <select id="gender" required>
+                <option value="">Select gender</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+                <option value="Prefer not to say">Prefer not to say</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="kcseGrade">KCSE Grade *</label>
+            <select id="kcseGrade" required>
+              <option value="">Select your KCSE grade</option>
+              <option value="A">A</option>
+              <option value="A-">A-</option>
+              <option value="B+">B+</option>
+              <option value="B">B</option>
+              <option value="B-">B-</option>
+              <option value="C+">C+</option>
+              <option value="C">C</option>
+              <option value="C-">C-</option>
+              <option value="D+">D+</option>
+              <option value="D">D</option>
+              <option value="D-">D-</option>
+              <option value="E">E</option>
+            </select>
+          </div>
+        </form>
+      `;
+
+      modalFooter.innerHTML = `
+        <button class="cancel-btn" type="button" onclick="closeModal()">Cancel</button>
+        <button class="apply-btn" type="button" onclick="submitApplication()" id="submitAppBtn">Submit Application</button>
+      `;
+    }
+
+    async function checkPreviousApplication() {
+      const email = document.getElementById('email').value;
+      if (!email || !currentJob) return;
+
+      try {
+        const response = await fetch(`${API_URL}/check-application/${currentJob.id}/${encodeURIComponent(email)}`);
+        const data = await response.json();
+
+        const warningDiv = document.getElementById('duplicateWarning');
+        const messageSpan = document.getElementById('duplicateMessage');
+        const submitBtn = document.getElementById('submitAppBtn');
+
+        if (data.hasApplied) {
+          const appliedDate = new Date(data.appliedDate).toLocaleDateString();
+          messageSpan.textContent = `You have already applied for this position on ${appliedDate}.`;
+          warningDiv.style.display = 'block';
+          submitBtn.disabled = true;
+          submitBtn.style.opacity = '0.5';
+        } else {
+          warningDiv.style.display = 'none';
+          submitBtn.disabled = false;
+          submitBtn.style.opacity = '1';
+        }
+      } catch (error) {
+        console.error('Error checking application:', error);
+      }
+    }
+
+    async function submitApplication() {
+      const form = document.getElementById('applicationForm');
+      if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+      }
+
+      const data = {
+        jobId: currentJob.id,
+        jobTitle: currentJob.title,
+        fullName: document.getElementById('fullName').value,
+        email: document.getElementById('email').value,
+        phone: document.getElementById('phone').value,
+        age: document.getElementById('age').value,
+        gender: document.getElementById('gender').value,
+        kcseGrade: document.getElementById('kcseGrade').value,
+      };
+
+      try {
+        const response = await fetch(`${API_URL}/applications`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+
+        if (response.ok) {
+          alert('✅ Application submitted successfully!\n\nWe will contact you soon.');
+          closeModal();
+        } else if (response.status === 409) {
+          alert('⚠️ You have already applied for this position!');
+        } else {
+          throw new Error('Failed to submit');
+        }
+      } catch (error) {
+        console.error('Application error:', error);
+        alert('❌ Error submitting application. Please try again.');
+      }
+    }
+
+    document.querySelector('.modal-close').addEventListener('click', closeModal);
+    document.getElementById('jobModal').addEventListener('click', (e) => {
+      if (e.target.classList.contains('cancel-btn') || e.target.id === 'jobModal') {
+        closeModal();
+      }
+    });
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeModal();
+    });
+    document.getElementById('applyBtn').addEventListener('click', showApplicationForm);
+
+    loadJobs();
+    loadSiteContent();
+  </script>
+</body>
+</html>
