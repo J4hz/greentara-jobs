@@ -20,6 +20,7 @@ def index(request):
     return render(request, 'index.html')
 
 
+@login_required
 def admin_page(request):
     """Serve the admin dashboard"""
     return render(request, 'admin.html')

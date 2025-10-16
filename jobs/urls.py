@@ -4,7 +4,7 @@ from . import views
 urlpatterns = [
     # Pages
     path('', views.index, name='index'),
-    path('admin/', views.admin_page, name='admin_page'),
+    path('dashboard/', views.admin_page, name='admin_page'),
     path('login/', views.login_page, name='login_page'),
     
     # Public API endpoints

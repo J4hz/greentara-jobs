@@ -135,3 +135,4 @@ if not DEBUG:
 CSRF_TRUSTED_ORIGINS = [
     'https://*.onrender.com',
 ]
+LOGIN_URL = '/login/'
