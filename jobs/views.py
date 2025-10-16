@@ -513,3 +513,8 @@ def send_admin_notification(name, job_title, email, phone):
     except Exception as e:
         print(f'Admin notification error: {e}')
         return False
+    from django.shortcuts import render
+from django.http import HttpResponse
+
+def home(request):
+    return HttpResponse("<h1>Welcome to Green Tara Jobs!</h1>")
