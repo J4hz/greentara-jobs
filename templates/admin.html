@@ -704,7 +704,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <script>
-    const API_URL = '/api/admin/check/';
+    const API_URL = '/api';
 
     async function checkAuthentication() {
       try {
@@ -1010,18 +1010,18 @@
       }
     }
 
-    function displayExistingPhotos(photos) {
-      const container = document.getElementById('photoPreviewContainer');
-      container.innerHTML = photos.map((photo, index) => `
-        <div style="position: relative; border: 2px solid #0a8a43; border-radius: 8px; overflow: hidden;">
-          <img src="http://localhost:3000${photo}" style="width: 100%; height: 100px; object-fit: cover;">
-          <button type="button" onclick="removeExistingPhoto(${index})" 
-                  style="position: absolute; top: 2px; right: 2px; background: #dc3545; color: white; border: none; border-radius: 50%; width: 24px; height: 24px; cursor: pointer; font-size: 16px; line-height: 1;">
-            ×
-          </button>
-        </div>
-      `).join('');
-    }
+ function displayExistingPhotos(photos) {
+  const container = document.getElementById('photoPreviewContainer');
+  container.innerHTML = photos.map((photo, index) => `
+    <div style="position: relative; border: 2px solid #0a8a43; border-radius: 8px; overflow: hidden;">
+      <img src="${photo}" style="width: 100%; height: 100px; object-fit: cover;">
+      <button type="button" onclick="removeExistingPhoto(${index})" 
+              style="position: absolute; top: 2px; right: 2px; background: #dc3545; color: white; border: none; border-radius: 50%; width: 24px; height: 24px; cursor: pointer; font-size: 16px; line-height: 1;">
+        ×
+      </button>
+    </div>
+  `).join('');
+}
 
     function removeExistingPhoto(index) {
       const urlsInput = document.getElementById('uploadedPhotoUrls');
@@ -1339,31 +1339,32 @@
     }
 
     async function loadContent() {
-      try {
-        const response = await authenticatedFetch(`${API_URL}/content`);
-        
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const content = await response.json();
-        
-        document.getElementById('site_name').value = content.site_name || '';
-        document.getElementById('hero_title').value = content.hero_title || '';
-        document.getElementById('hero_subtitle').value = content.hero_subtitle || '';
-        document.getElementById('about_text').value = content.about_text || '';
-        document.getElementById('contact_email').value = content.contact_email || '';
-        document.getElementById('contact_phone').value = content.contact_phone || '';
-        
-        if (content.site_logo) {
-          const logoPreview = document.getElementById('logoPreview');
-          logoPreview.innerHTML = `<img src="http://localhost:3000${content.site_logo}" alt="Logo" style="max-width: 100%; max-height: 100%; object-fit: contain;">`;
-        }
-      } catch (error) {
-        console.error('Error loading content:', error);
-        showAlert('Error loading content: ' + error.message, 'error');
-      }
+  try {
+    const response = await authenticatedFetch(`${API_URL}/content`);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
+    
+    const content = await response.json();
+    
+    document.getElementById('site_name').value = content.site_name || '';
+    document.getElementById('hero_title').value = content.hero_title || '';
+    document.getElementById('hero_subtitle').value = content.hero_subtitle || '';
+    document.getElementById('about_text').value = content.about_text || '';
+    document.getElementById('contact_email').value = content.contact_email || '';
+    document.getElementById('contact_phone').value = content.contact_phone || '';
+    
+  
+    if (content.site_logo) {
+      const logoPreview = document.getElementById('logoPreview');
+      logoPreview.innerHTML = `<img src="${content.site_logo}" alt="Logo" style="max-width: 100%; max-height: 100%; object-fit: contain;">`;
+    }
+  } catch (error) {
+    console.error('Error loading content:', error);
+    showAlert('Error loading content: ' + error.message, 'error');
+  }
+}
 
     function previewLogo(event) {
       const file = event.target.files[0];
