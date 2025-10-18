@@ -651,6 +651,125 @@
 
     loadJobs();
     loadSiteContent();
+    let isRefreshing = false;
+
+async function autoRefreshJobs() {
+  if (isRefreshing) return; // Prevent multiple simultaneous refreshes
+  
+  isRefreshing = true;
+  
+  try {
+    // Add timestamp to prevent caching
+    const timestamp = Date.now();
+    const response = await fetch(`${API_URL}/jobs?active_only=true&_t=${timestamp}`, {
+      cache: 'no-store',
+      headers: {
+        'Cache-Control': 'no-cache',
+        'Pragma': 'no-cache'
+      }
+    });
+    
+    if (response.ok) {
+      const newJobs = await response.json();
+      
+      // Check if jobs have actually changed
+      const hasChanged = JSON.stringify(newJobs) !== JSON.stringify(allJobs);
+      
+      if (hasChanged) {
+        console.log('🔄 New jobs detected! Updating page...');
+        allJobs = newJobs;
+        
+        // Re-render the jobs
+        const searchTerm = document.getElementById('jobSearch').value;
+        if (searchTerm) {
+          searchJobs(); // If user is searching, maintain the search
+        } else {
+          renderJobs(newJobs);
+        }
+        
+        // Show a subtle notification
+        showNotification('✅ Jobs updated! New listings available.');
+      }
+    }
+  } catch (error) {
+    console.error('Auto-refresh error:', error);
+  } finally {
+    isRefreshing = false;
+  }
+}
+
+// Show notification when jobs update
+function showNotification(message) {
+  // Remove any existing notification
+  const existingNotif = document.getElementById('jobUpdateNotification');
+  if (existingNotif) existingNotif.remove();
+  
+  const notification = document.createElement('div');
+  notification.id = 'jobUpdateNotification';
+  notification.style.cssText = `
+    position: fixed;
+    top: 80px;
+    right: 20px;
+    background: linear-gradient(135deg, #0a8a43, #066d34);
+    color: white;
+    padding: 12px 20px;
+    border-radius: 8px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+    z-index: 9999;
+    font-size: 14px;
+    font-weight: 600;
+    animation: slideIn 0.3s ease;
+  `;
+  notification.textContent = message;
+  
+  document.body.appendChild(notification);
+  
+  // Auto-remove after 4 seconds
+  setTimeout(() => {
+    notification.style.animation = 'slideOut 0.3s ease';
+    setTimeout(() => notification.remove(), 300);
+  }, 4000);
+}
+
+// Add CSS animations
+const autoRefreshStyle = document.createElement('style');
+autoRefreshStyle.textContent = `
+  @keyframes slideIn {
+    from { 
+      transform: translateX(400px); 
+      opacity: 0; 
+    }
+    to { 
+      transform: translateX(0); 
+      opacity: 1; 
+    }
+  }
+  @keyframes slideOut {
+    from { 
+      transform: translateX(0); 
+      opacity: 1; 
+    }
+    to { 
+      transform: translateX(400px); 
+      opacity: 0; 
+    }
+  }
+`;
+document.head.appendChild(autoRefreshStyle);
+
+// Start auto-refresh: Check every 30 seconds
+setInterval(autoRefreshJobs, 30000);
+
+console.log('✅ Auto-refresh enabled - Jobs will update every 30 seconds');
+console.log('🔄 Make changes in admin dashboard and they will appear within 30 seconds!');
+
+// Also refresh when user comes back to the tab (if they were away)
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) {
+    console.log('👀 User returned to tab - checking for updates...');
+    autoRefreshJobs();
+  }
+});
   </script>
 </body>
 </html>
