@@ -136,3 +136,27 @@ CSRF_TRUSTED_ORIGINS = [
     'https://*.onrender.com',
 ]
 LOGIN_URL = '/login/'
+
+import os
+from pathlib import Path
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+STATIC_URL = '/static/'
+STATICFILES_DIRS = [
+    BASE_DIR / "static",  # Project-level static files
+]
+
+# For production
+STATIC_ROOT = BASE_DIR / "staticfiles"
+# Media files (for downloads)
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# File size limits
+FILE_UPLOAD_MAX_MEMORY_SIZE = 5242880  # 5MB
+DATA_UPLOAD_MAX_MEMORY_SIZE = 5242880
+
+STATICFILES_DIRS = [
+    BASE_DIR / 'static',  # Use a relative path instead
+]
