@@ -116,6 +116,179 @@ EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 ADMIN_EMAIL = os.environ.get('ADMIN_EMAIL', EMAIL_HOST_USER)
 
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', 'your-email@gmail.com')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', 'your-app-password')
+DEFAULT_FROM_EMAIL = 'Green Tara <noreply@greentara.co.ke>'
+SERVER_EMAIL = DEFAULT_FROM_EMAIL
+
+# For development/testing (prints emails to console)
+# Uncomment this line to test without sending real emails:
+# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+
+# ============================================
+# MEDIA FILES (Uploaded Documents)
+# ============================================
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+
+
+# ============================================
+# FILE UPLOAD SETTINGS
+# ============================================
+
+# Maximum file upload size (5MB)
+FILE_UPLOAD_MAX_MEMORY_SIZE = 5242880  # 5MB in bytes
+DATA_UPLOAD_MAX_MEMORY_SIZE = 5242880  # 5MB in bytes
+
+# Allowed file upload extensions
+FILE_UPLOAD_PERMISSIONS = 0o644
+
+
+# ============================================
+# STATIC FILES
+# ============================================
+
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+
+
+# ============================================
+# CORS CONFIGURATION
+# ============================================
+
+# Install: pip install django-cors-headers
+
+INSTALLED_APPS = [
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    
+    # Third party
+    'corsheaders',  # ADD THIS
+    
+    # Your apps
+    'jobs',  # Replace with your app name
+]
+
+MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',  # ADD THIS AT TOP
+    'django.middleware.security.SecurityMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+]
+
+# CORS settings
+CORS_ALLOWED_ORIGINS = [
+    'https://greentara-jobs.onrender.com',  # Your production domain
+    'http://localhost:3000',  # For local development
+    'http://127.0.0.1:8000',  # For local development
+]
+
+CORS_ALLOW_CREDENTIALS = True
+
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+]
+
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
+
+
+# ============================================
+# CSRF SETTINGS (For Render deployment)
+# ============================================
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://greentara-jobs.onrender.com',  # Your production domain
+]
+
+# Allow CSRF cookie from different domain
+CSRF_COOKIE_SAMESITE = 'None'
+CSRF_COOKIE_SECURE = True  # Only over HTTPS
+SESSION_COOKIE_SAMESITE = 'None'
+SESSION_COOKIE_SECURE = True  # Only over HTTPS
+
+
+# ============================================
+# SECURITY SETTINGS (For production)
+# ============================================
+
+# Only use these in production (when DEBUG=False)
+if not DEBUG:
+    SECURE_SSL_REDIRECT = True
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SECURE_HSTS_SECONDS = 31536000
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+
+
+# ============================================
+# LOGGING (Optional but helpful)
+# ============================================
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+    },
+}
+
+
+# ============================================
+# RENDER ENVIRONMENT VARIABLES
+# ============================================
+
+# These should be set in Render Dashboard → Environment:
+# 
+# EMAIL_HOST_USER = your-email@gmail.com
+# EMAIL_HOST_PASSWORD = your-16-char-app-password
+# SECRET_KEY = your-secret-key
+# DEBUG = False
+# ALLOWED_HOSTS = greentara-jobs.onrender.com
+
 # Session settings
 SESSION_COOKIE_AGE = 86400
 SESSION_COOKIE_SECURE = not DEBUG

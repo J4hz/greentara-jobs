@@ -10,3 +10,8 @@ Pillow==10.1.0
 dj-database-url==2.1.0
 djangorestframework==3.15.0
 djangorestframework-simplejwt==6.3.0
+Django>=4.2 
+django-cors-headers 
+Pillow 
+gunicorn 
+psycopg2-binary

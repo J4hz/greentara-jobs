@@ -1,3 +1,5 @@
+# COMPLETE models.py with all required fields
+
 from django.db import models
 
 

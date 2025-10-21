@@ -496,147 +496,211 @@
     }
 
     function showApplicationForm() {
-      if (!currentJob) return;
+         if (!currentJob) {
+    alert('❌ No job selected. Please try again.');
+    return;
+  }
 
-      const modalBody = document.getElementById('modalBody');
-      const modalFooter = document.getElementById('modalFooter');
+  const modalBody = document.getElementById('modalBody');
+  const modalFooter = document.getElementById('modalFooter');
+  
+  modalBody.innerHTML = `
+    <form class="application-form" id="applicationForm" enctype="multipart/form-data">
+      <h4 style="color:#0a8a43; margin-top:0">Apply for ${currentJob.title}</h4>
       
-      modalBody.innerHTML = `
-        <form class="application-form" id="applicationForm">
-          <h4 style="color:#0a8a43; margin-top:0">Apply for ${currentJob.title}</h4>
-          
-          <div class="form-group">
-            <label for="fullName">Full Name *</label>
-            <input type="text" id="fullName" required placeholder="Enter your full name">
-          </div>
+      <div class="form-group">
+        <label for="fullName">Full Name *</label>
+        <input type="text" id="fullName" required placeholder="Enter your full name">
+      </div>
 
-          <div class="form-row">
-            <div class="form-group">
-              <label for="email">Email Address *</label>
-              <input type="email" id="email" required placeholder="your.email@example.com" onblur="checkPreviousApplication()">
-            </div>
-            
-            <div class="form-group">
-              <label for="phone">Phone Number *</label>
-              <input type="tel" id="phone" required placeholder="+254 700 000 000">
-            </div>
-          </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="email">Email Address *</label>
+          <input type="email" id="email" required placeholder="your.email@example.com" 
+                 onblur="checkPreviousApplication()">
+        </div>
+        
+        <div class="form-group">
+          <label for="phone">Phone Number *</label>
+          <input type="tel" id="phone" required placeholder="+254 700 000 000">
+        </div>
+      </div>
 
-          <div id="duplicateWarning" style="display:none; background:#fff3cd; border:1px solid #ffc107; padding:12px; border-radius:8px; margin:10px 0; color:#856404;">
-            <strong>⚠️ Notice:</strong> <span id="duplicateMessage"></span>
-          </div>
+      <div id="duplicateWarning" style="display:none; background:#fff3cd; border:1px solid #ffc107; padding:12px; border-radius:8px; margin:10px 0; color:#856404;">
+        <strong>⚠️ Notice:</strong> <span id="duplicateMessage"></span>
+      </div>
 
-          <div class="form-row">
-            <div class="form-group">
-              <label for="age">Age *</label>
-              <input type="number" id="age" required min="18" max="65" placeholder="18">
-            </div>
-            
-            <div class="form-group">
-              <label for="gender">Gender *</label>
-              <select id="gender" required>
-                <option value="">Select gender</option>
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-                <option value="Other">Other</option>
-                <option value="Prefer not to say">Prefer not to say</option>
-              </select>
-            </div>
-          </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="age">Age *</label>
+          <input type="number" id="age" required min="18" max="65" placeholder="25">
+        </div>
+        
+        <div class="form-group">
+          <label for="gender">Gender *</label>
+          <select id="gender" required>
+            <option value="">Select gender</option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+            <option value="Other">Other</option>
+            <option value="Prefer not to say">Prefer not to say</option>
+          </select>
+        </div>
+      </div>
 
-          <div class="form-group">
-            <label for="kcseGrade">KCSE Grade *</label>
-            <select id="kcseGrade" required>
-              <option value="">Select your KCSE grade</option>
-              <option value="A">A</option>
-              <option value="A-">A-</option>
-              <option value="B+">B+</option>
-              <option value="B">B</option>
-              <option value="B-">B-</option>
-              <option value="C+">C+</option>
-              <option value="C">C</option>
-              <option value="C-">C-</option>
-              <option value="D+">D+</option>
-              <option value="D">D</option>
-              <option value="D-">D-</option>
-              <option value="E">E</option>
-            </select>
-          </div>
-        </form>
-      `;
+      <div class="form-group">
+        <label for="kcseGrade">KCSE Grade *</label>
+        <select id="kcseGrade" required>
+          <option value="">Select your KCSE grade</option>
+          <option value="A">A</option>
+          <option value="A-">A-</option>
+          <option value="B+">B+</option>
+          <option value="B">B</option>
+          <option value="B-">B-</option>
+          <option value="C+">C+</option>
+          <option value="C">C</option>
+          <option value="C-">C-</option>
+          <option value="D+">D+</option>
+          <option value="D">D</option>
+          <option value="D-">D-</option>
+          <option value="E">E</option>
+        </select>
+      </div>
 
-      modalFooter.innerHTML = `
-        <button class="cancel-btn" type="button" onclick="closeModal()">Cancel</button>
-        <button class="apply-btn" type="button" onclick="submitApplication()" id="submitAppBtn">Submit Application</button>
-      `;
-    }
+      <!-- FILE UPLOADS SECTION -->
+      <div style="background: #f9fdf9; padding: 15px; border-radius: 8px; border: 2px dashed #0a8a43; margin: 20px 0;">
+        <h4 style="color: #0a8a43; margin-top: 0; font-size: 1rem;">📎 Upload Documents</h4>
+        
+        <!-- CV/Resume Upload -->
+        <div class="form-group">
+          <label for="cvUpload">📄 CV/Resume (Required) *</label>
+          <input 
+            type="file" 
+            id="cvUpload" 
+            required
+            accept=".pdf,.doc,.docx"
+            style="padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px; background: white; width: 100%;"
+          >
+          <small style="display:block; margin-top:5px; color:#666;">
+            PDF, DOC or DOCX • Max 5MB
+          </small>
+          <div id="cvPreview" style="margin-top: 8px; color: #0a8a43; font-weight: 600;"></div>
+        </div>
 
-    async function checkPreviousApplication() {
-      const email = document.getElementById('email').value;
-      if (!email || !currentJob) return;
+        <!-- ID/Passport Upload -->
+        <div class="form-group">
+          <label for="idUpload">🪪 National ID or Passport (Required) *</label>
+          <input 
+            type="file" 
+            id="idUpload" 
+            required
+            accept=".pdf,.jpg,.jpeg,.png"
+            style="padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px; background: white; width: 100%;"
+          >
+          <small style="display:block; margin-top:5px; color:#666;">
+            PDF or Image • Max 5MB
+          </small>
+          <div id="idPreview" style="margin-top: 8px; color: #0a8a43; font-weight: 600;"></div>
+        </div>
 
-      try {
-        const response = await fetch(`${API_URL}/check-application/${currentJob.id}/${encodeURIComponent(email)}`);
-        const data = await response.json();
+        <!-- Certificate Upload -->
+        <div class="form-group">
+          <label for="certificateUpload">📜 KCSE Certificate (Optional)</label>
+          <input 
+            type="file" 
+            id="certificateUpload"
+            accept=".pdf,.jpg,.jpeg,.png"
+            style="padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px; background: white; width: 100%;"
+          >
+          <small style="display:block; margin-top:5px; color:#666;">
+            PDF or Image • Max 5MB
+          </small>
+          <div id="certificatePreview" style="margin-top: 8px; color: #0a8a43; font-weight: 600;"></div>
+        </div>
 
-        const warningDiv = document.getElementById('duplicateWarning');
-        const messageSpan = document.getElementById('duplicateMessage');
-        const submitBtn = document.getElementById('submitAppBtn');
+        <!-- Additional Documents -->
+        <div class="form-group">
+          <label for="additionalDocs">📎 Additional Documents (Optional)</label>
+          <input 
+            type="file" 
+            id="additionalDocs" 
+            multiple
+            accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+            style="padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px; background: white; width: 100%;"
+          >
+          <small style="display:block; margin-top:5px; color:#666;">
+            Certificates, recommendations, etc. • Max 3 files, 5MB each
+          </small>
+          <div id="additionalPreview" style="margin-top: 8px; color: #0a8a43; font-weight: 600;"></div>
+        </div>
+      </div>
 
-        if (data.hasApplied) {
-          const appliedDate = new Date(data.appliedDate).toLocaleDateString();
-          messageSpan.textContent = `You have already applied for this position on ${appliedDate}.`;
-          warningDiv.style.display = 'block';
-          submitBtn.disabled = true;
-          submitBtn.style.opacity = '0.5';
-        } else {
-          warningDiv.style.display = 'none';
-          submitBtn.disabled = false;
-          submitBtn.style.opacity = '1';
+      <div style="background: #e3f2fd; padding: 12px; border-radius: 8px; border-left: 4px solid #2196F3;">
+        <small style="color: #1565c0;">
+          <strong>📧 Email Confirmation:</strong> You will receive an email confirmation at the address you provided once your application is submitted successfully.
+        </small>
+      </div>
+    </form>
+  `;
+
+  // Add file preview handlers
+  ['cvUpload', 'idUpload', 'certificateUpload'].forEach(id => {
+    const input = document.getElementById(id);
+    const preview = document.getElementById(id.replace('Upload', 'Preview'));
+    
+    input.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        if (file.size > 5 * 1024 * 1024) {
+          alert(`❌ ${file.name} is too large. Maximum size is 5MB.`);
+          e.target.value = '';
+          preview.textContent = '';
+          return;
         }
-      } catch (error) {
-        console.error('Error checking application:', error);
+        preview.textContent = `✅ ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+      } else {
+        preview.textContent = '';
+      }
+    });
+  });
+
+  document.getElementById('additionalDocs').addEventListener('change', (e) => {
+    const files = e.target.files;
+    const preview = document.getElementById('additionalPreview');
+    
+    if (files.length > 3) {
+      alert('❌ Maximum 3 additional documents allowed.');
+      e.target.value = '';
+      preview.textContent = '';
+      return;
+    }
+    
+    let valid = true;
+    for (let file of files) {
+      if (file.size > 5 * 1024 * 1024) {
+        alert(`❌ ${file.name} is too large. Maximum size is 5MB per file.`);
+        e.target.value = '';
+        preview.textContent = '';
+        valid = false;
+        break;
       }
     }
-
-    async function submitApplication() {
-      const form = document.getElementById('applicationForm');
-      if (!form.checkValidity()) {
-        form.reportValidity();
-        return;
-      }
-
-      const data = {
-        jobId: currentJob.id,
-        jobTitle: currentJob.title,
-        fullName: document.getElementById('fullName').value,
-        email: document.getElementById('email').value,
-        phone: document.getElementById('phone').value,
-        age: document.getElementById('age').value,
-        gender: document.getElementById('gender').value,
-        kcseGrade: document.getElementById('kcseGrade').value,
-      };
-
-      try {
-        const response = await fetch(`${API_URL}/applications`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data)
-        });
-
-        if (response.ok) {
-          alert('✅ Application submitted successfully!\n\nWe will contact you soon.');
-          closeModal();
-        } else if (response.status === 409) {
-          alert('⚠️ You have already applied for this position!');
-        } else {
-          throw new Error('Failed to submit');
-        }
-      } catch (error) {
-        console.error('Application error:', error);
-        alert('❌ Error submitting application. Please try again.');
-      }
+    
+    if (valid && files.length > 0) {
+      preview.textContent = `✅ ${files.length} file(s) selected`;
+    } else {
+      preview.textContent = '';
     }
+  });
+
+  modalFooter.innerHTML = `
+    <button class="cancel-btn" type="button" onclick="closeModal()">Cancel</button>
+    <button class="apply-btn" type="button" onclick="submitApplication()" id="submitAppBtn">
+      Submit Application
+    </button>
+  `;
+}
+    
 
     document.querySelector('.modal-close').addEventListener('click', closeModal);
     document.getElementById('jobModal').addEventListener('click', (e) => {
@@ -652,6 +716,142 @@
     loadJobs();
     loadSiteContent();
     let isRefreshing = false;
+
+    // REPLACE submitApplication() function in index.html
+
+async function submitApplication() {
+  const form = document.getElementById('applicationForm');
+  
+  if (!form.checkValidity()) {
+    form.reportValidity();
+    return;
+  }
+
+  const submitBtn = document.getElementById('submitAppBtn');
+  const originalText = submitBtn.textContent;
+  
+  submitBtn.disabled = true;
+  submitBtn.textContent = '⏳ Uploading files...';
+
+  try {
+    // Create FormData for file uploads
+    const formData = new FormData();
+    
+    // Add text fields
+    formData.append('jobId', currentJob.id);
+    formData.append('jobTitle', currentJob.title);
+    formData.append('fullName', document.getElementById('fullName').value.trim());
+    formData.append('email', document.getElementById('email').value.trim());
+    formData.append('phone', document.getElementById('phone').value.trim());
+    formData.append('age', document.getElementById('age').value);
+    formData.append('gender', document.getElementById('gender').value);
+    formData.append('kcseGrade', document.getElementById('kcseGrade').value);
+
+    // Add CV (required)
+    const cvFile = document.getElementById('cvUpload').files[0];
+    if (!cvFile) {
+      alert('❌ Please upload your CV/Resume');
+      submitBtn.disabled = false;
+      submitBtn.textContent = originalText;
+      return;
+    }
+    formData.append('cv', cvFile);
+
+    // Add ID (required)
+    const idFile = document.getElementById('idUpload').files[0];
+    if (!idFile) {
+      alert('❌ Please upload your National ID or Passport');
+      submitBtn.disabled = false;
+      submitBtn.textContent = originalText;
+      return;
+    }
+    formData.append('id_document', idFile);
+
+    // Add certificate (optional)
+    const certFile = document.getElementById('certificateUpload').files[0];
+    if (certFile) {
+      formData.append('certificate', certFile);
+    }
+
+    // Add additional documents (optional)
+    const additionalFiles = document.getElementById('additionalDocs').files;
+    for (let i = 0; i < additionalFiles.length; i++) {
+      formData.append('additional_docs', additionalFiles[i]);
+    }
+
+    console.log('📤 Submitting application with files...');
+    submitBtn.textContent = '📧 Submitting...';
+
+    const response = await fetch(`${API_URL}/applications`, {
+      method: 'POST',
+      body: formData  // Don't set Content-Type - browser sets it automatically with boundary
+    });
+
+    console.log('📡 Response:', response.status);
+
+    let result;
+    const contentType = response.headers.get('content-type');
+    
+    if (contentType && contentType.includes('application/json')) {
+      result = await response.json();
+    } else {
+      const text = await response.text();
+      console.warn('Non-JSON response:', text);
+      result = { error: 'Server returned unexpected response' };
+    }
+
+    if (response.ok) {
+      console.log('✅ Application submitted successfully!');
+      
+      // Show success message
+      alert(`✅ Application Submitted Successfully!
+
+Thank you for applying for ${currentJob.title}!
+
+📧 A confirmation email has been sent to:
+${document.getElementById('email').value}
+
+We will review your application and contact you soon.
+
+Application ID: ${result.applicationId || 'N/A'}`);
+      
+      closeModal();
+      return;
+    }
+
+    if (response.status === 409) {
+      alert('⚠️ You have already applied for this position!\n\nPlease check your email for confirmation.');
+      submitBtn.disabled = false;
+      submitBtn.textContent = originalText;
+      return;
+    }
+
+    if (response.status === 413) {
+      throw new Error('Files are too large. Please ensure all files are under 5MB each.');
+    }
+
+    throw new Error(result.error || result.message || `Submission failed (${response.status})`);
+
+  } catch (error) {
+    console.error('❌ Application error:', error);
+    
+    let errorMessage = '❌ Error submitting application:\n\n';
+    
+    if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+      errorMessage += 'Cannot connect to server.\n\n';
+      errorMessage += 'Please check your internet connection and try again.';
+    } else if (error.message.includes('too large')) {
+      errorMessage += error.message;
+    } else {
+      errorMessage += error.message + '\n\nPlease try again or contact support.';
+    }
+    
+    alert(errorMessage);
+    
+    submitBtn.disabled = false;
+    submitBtn.textContent = originalText;
+  }
+}
 
 async function autoRefreshJobs() {
   if (isRefreshing) return; // Prevent multiple simultaneous refreshes
