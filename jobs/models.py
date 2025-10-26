@@ -13,10 +13,17 @@ class Job(models.Model):
     responsibilities = models.TextField()
     requirements = models.TextField()
     benefits = models.TextField()
-    workplace_photos = models.TextField(blank=True, null=True)
+    workplace_photos = models.JSONField(blank=True, null=True, default=list)
     expiry_date = models.DateField(blank=True, null=True)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    workplace_photos = models.TextField(blank=True, null=True)
+    
+    def save(self, *args, **kwargs):
+        # Convert empty string to None for database
+        if self.workplace_photos == '':
+            self.workplace_photos = None
+        super().save(*args, **kwargs)
     
     def __str__(self):
         return f"{self.title} - {self.location}"
