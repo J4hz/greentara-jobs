@@ -4,7 +4,6 @@ from django.db import models
 
 
 class Job(models.Model):
-    """Job posting model"""
     title = models.CharField(max_length=200)
     location = models.CharField(max_length=200)
     salary = models.CharField(max_length=100)
@@ -14,10 +13,13 @@ class Job(models.Model):
     responsibilities = models.TextField()
     requirements = models.TextField()
     benefits = models.TextField()
-    workplace_photos = models.TextField(blank=True, null=True)  # JSON array of photo URLs
+    workplace_photos = models.TextField(blank=True, null=True)
     expiry_date = models.DateField(blank=True, null=True)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return f"{self.title} - {self.location}"
     
     class Meta:
         ordering = ['-created_at']
