@@ -2,7 +2,6 @@
 
 from django.db import models
 
-
 class Job(models.Model):
     title = models.CharField(max_length=200)
     location = models.CharField(max_length=200)
@@ -17,16 +16,6 @@ class Job(models.Model):
     expiry_date = models.DateField(blank=True, null=True)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    workplace_photos = models.TextField(blank=True, null=True)
-    
-    def save(self, *args, **kwargs):
-        # Convert empty string to None for database
-        if self.workplace_photos == '':
-            self.workplace_photos = None
-        super().save(*args, **kwargs)
-    
-    def __str__(self):
-        return f"{self.title} - {self.location}"
     
     class Meta:
         ordering = ['-created_at']
@@ -38,9 +27,7 @@ class Job(models.Model):
 
 
 class Application(models.Model):
-    """Job application model with file uploads"""
-    
-    STATUS_CHOICES = [
+    STATUS_CHOICES = [  # STATUS_CHOICES goes HERE in Application model
         ('pending', 'Pending Review'),
         ('reviewed', 'Reviewed'),
         ('shortlisted', 'Shortlisted'),
@@ -61,15 +48,14 @@ class Application(models.Model):
     cv_document = models.FileField(upload_to='applications/cv/', null=True, blank=True)
     id_document = models.FileField(upload_to='applications/id/', null=True, blank=True)
     certificate_document = models.FileField(upload_to='applications/certificates/', null=True, blank=True)
-    additional_documents = models.TextField(null=True, blank=True)  # Comma-separated paths
+    additional_documents = models.TextField(null=True, blank=True)
     
-    # Status & Notes
+    # Status
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='pending')
-    notes = models.TextField(blank=True, null=True, help_text='Internal admin notes')
+    notes = models.TextField(blank=True, null=True)
     
     # Metadata
     applied_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
     
     class Meta:
         ordering = ['-applied_at']
@@ -79,6 +65,8 @@ class Application(models.Model):
     
     def __str__(self):
         return f"{self.full_name} - {self.job_title} ({self.status})"
+
+
     
     def get_additional_docs_list(self):
         """Return list of additional document paths"""
