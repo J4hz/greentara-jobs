@@ -16,6 +16,8 @@ class Job(models.Model):
     expiry_date = models.DateField(blank=True, null=True)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    status = models.CharField(max_length=20, default='pending')
     
     class Meta:
         ordering = ['-created_at']
