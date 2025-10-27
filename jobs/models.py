@@ -58,6 +58,10 @@ class Application(models.Model):
     
     # Metadata
     applied_at = models.DateTimeField(auto_now_add=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)  # Add this line
+    status = models.CharField(max_length=20, default='pending')
     
     class Meta:
         ordering = ['-applied_at']
