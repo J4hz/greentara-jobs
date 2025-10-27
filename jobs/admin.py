@@ -1,4 +1,6 @@
-# CREATE OR REPLACE admin.py in your Django app
+# ============================================
+# FIXED admin.py - Shows Documents Properly
+# ============================================
 
 from django.contrib import admin
 from django.utils.html import format_html
@@ -35,14 +37,10 @@ class JobAdmin(admin.ModelAdmin):
             'fields': ('expiry_date', 'is_active')
         }),
     )
-    
-    def get_queryset(self, request):
-        qs = super().get_queryset(request)
-        return qs
 
 
 # ============================================
-# APPLICATION ADMIN - This is the main one!
+# APPLICATION ADMIN - WITH DOCUMENTS SECTION
 # ============================================
 
 @admin.register(Application)
@@ -56,10 +54,9 @@ class ApplicationAdmin(admin.ModelAdmin):
         'age',
         'gender',
         'kcse_grade',
+        'status',
         'status_badge',
         'applied_at',
-        'view_documents_button',
-        'status'
     ]
     
     list_filter = [
@@ -85,10 +82,12 @@ class ApplicationAdmin(admin.ModelAdmin):
         'job_id',
         'job_title',
         'applied_at',
-        'view_cv',
-        'view_id_document',
-        'view_certificate',
-        'view_additional_docs'
+        'created_at',
+        'updated_at',
+        'display_cv',
+        'display_id',
+        'display_certificate',
+        'display_additional',
     ]
     
     fieldsets = (
@@ -98,12 +97,16 @@ class ApplicationAdmin(admin.ModelAdmin):
         ('Personal Information', {
             'fields': ('full_name', 'email', 'phone', 'age', 'gender', 'kcse_grade')
         }),
-        ('Uploaded Documents', {
-            'fields': ('view_cv', 'view_id_document', 'view_certificate', 'view_additional_docs'),
-            'description': 'Click the links below to download documents'
+        ('📎 Uploaded Documents', {
+            'fields': ('display_cv', 'display_id', 'display_certificate', 'display_additional'),
+            'description': '⬇️ Click the buttons below to download applicant documents'
         }),
         ('Admin Notes', {
             'fields': ('notes',),
+            'classes': ('collapse',)
+        }),
+        ('Metadata', {
+            'fields': ('created_at', 'updated_at'),
             'classes': ('collapse',)
         }),
     )
@@ -115,7 +118,10 @@ class ApplicationAdmin(admin.ModelAdmin):
         'export_to_csv'
     ]
     
-    # Custom display methods
+    # ============================================
+    # DISPLAY METHODS
+    # ============================================
+    
     def status_badge(self, obj):
         """Show colored status badge"""
         colors = {
@@ -133,76 +139,80 @@ class ApplicationAdmin(admin.ModelAdmin):
         )
     status_badge.short_description = 'Status'
     
-    def view_documents_button(self, obj):
-        """Button to view all documents"""
-        if obj.cv_document or obj.id_document:
-            return format_html(
-                '<a class="button" href="#" onclick="alert(\'Scroll down to Documents section\'); '
-                'return false;">📁 View Documents</a>'
-            )
-        return '—'
-    view_documents_button.short_description = 'Documents'
+    # ============================================
+    # DOCUMENT DOWNLOAD METHODS
+    # ============================================
     
-    # Document download links
-    def view_cv(self, obj):
-        """Download link for CV"""
+    def display_cv(self, obj):
+        """Display CV/Resume download button"""
         if obj.cv_document:
             return format_html(
                 '<a href="{}" target="_blank" class="button" '
-                'style="background: #0a8a43; color: white; padding: 8px 15px; '
-                'text-decoration: none; border-radius: 4px; display: inline-block;">'
+                'style="background: #0a8a43; color: white; padding: 10px 20px; '
+                'text-decoration: none; border-radius: 5px; display: inline-block; '
+                'font-weight: bold;">'
                 '📄 Download CV/Resume</a>',
                 obj.cv_document.url
             )
-        return format_html('<span style="color: #999;">Not uploaded</span>')
-    view_cv.short_description = 'CV/Resume'
+        return format_html('<span style="color: #999; font-style: italic;">❌ Not uploaded</span>')
+    display_cv.short_description = '📄 CV/Resume'
     
-    def view_id_document(self, obj):
-        """Download link for ID"""
+    def display_id(self, obj):
+        """Display ID/Passport download button"""
         if obj.id_document:
             return format_html(
                 '<a href="{}" target="_blank" class="button" '
-                'style="background: #2196F3; color: white; padding: 8px 15px; '
-                'text-decoration: none; border-radius: 4px; display: inline-block;">'
+                'style="background: #2196F3; color: white; padding: 10px 20px; '
+                'text-decoration: none; border-radius: 5px; display: inline-block; '
+                'font-weight: bold;">'
                 '🪪 Download ID/Passport</a>',
                 obj.id_document.url
             )
-        return format_html('<span style="color: #999;">Not uploaded</span>')
-    view_id_document.short_description = 'ID/Passport'
+        return format_html('<span style="color: #999; font-style: italic;">❌ Not uploaded</span>')
+    display_id.short_description = '🪪 ID/Passport'
     
-    def view_certificate(self, obj):
-        """Download link for certificate"""
+    def display_certificate(self, obj):
+        """Display certificate download button"""
         if obj.certificate_document:
             return format_html(
                 '<a href="{}" target="_blank" class="button" '
-                'style="background: #FF9800; color: white; padding: 8px 15px; '
-                'text-decoration: none; border-radius: 4px; display: inline-block;">'
-                '📜 Download Certificate</a>',
+                'style="background: #FF9800; color: white; padding: 10px 20px; '
+                'text-decoration: none; border-radius: 5px; display: inline-block; '
+                'font-weight: bold;">'
+                '📜 Download KCSE Certificate</a>',
                 obj.certificate_document.url
             )
-        return format_html('<span style="color: #999;">Optional - Not provided</span>')
-    view_certificate.short_description = 'KCSE Certificate'
+        return format_html('<span style="color: #999; font-style: italic;">⚠️ Optional - Not provided</span>')
+    display_certificate.short_description = '📜 KCSE Certificate (Optional)'
     
-    def view_additional_docs(self, obj):
-        """Download links for additional documents"""
+    def display_additional(self, obj):
+        """Display additional documents download buttons"""
         if obj.additional_documents:
             docs = obj.additional_documents.split(',')
             links = []
             for i, doc in enumerate(docs, 1):
-                links.append(format_html(
-                    '<a href="{}" target="_blank" class="button" '
-                    'style="background: #9C27B0; color: white; padding: 8px 15px; '
-                    'text-decoration: none; border-radius: 4px; display: inline-block; '
-                    'margin-right: 5px; margin-bottom: 5px;">'
-                    '📎 Document {}</a>',
-                    doc.strip(), i
-                ))
-            return format_html('<div style="display: flex; flex-wrap: wrap; gap: 5px;">{}</div>', 
-                             format_html(''.join(str(link) for link in links)))
-        return format_html('<span style="color: #999;">None uploaded</span>')
-    view_additional_docs.short_description = 'Additional Documents'
+                doc_path = doc.strip()
+                if doc_path:
+                    links.append(format_html(
+                        '<a href="/media/{}" target="_blank" class="button" '
+                        'style="background: #9C27B0; color: white; padding: 8px 15px; '
+                        'text-decoration: none; border-radius: 5px; display: inline-block; '
+                        'margin-right: 5px; margin-bottom: 5px; font-weight: bold;">'
+                        '📎 Document {}</a>',
+                        doc_path, i
+                    ))
+            if links:
+                return format_html(
+                    '<div style="display: flex; flex-wrap: wrap; gap: 5px;">{}</div>', 
+                    format_html(''.join(str(link) for link in links))
+                )
+        return format_html('<span style="color: #999; font-style: italic;">📭 None uploaded</span>')
+    display_additional.short_description = '📎 Additional Documents'
     
-    # Bulk actions
+    # ============================================
+    # BULK ACTIONS
+    # ============================================
+    
     def mark_as_reviewed(self, request, queryset):
         """Mark selected applications as reviewed"""
         updated = queryset.update(status='reviewed')
@@ -248,12 +258,6 @@ class ApplicationAdmin(admin.ModelAdmin):
         
         return response
     export_to_csv.short_description = '📥 Export to CSV'
-    
-    # Custom admin page title
-    class Media:
-        css = {
-            'all': ('admin/css/custom_admin.css',)
-        }
 
 
 # ============================================

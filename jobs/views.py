@@ -1,5 +1,5 @@
 # ============================================
-# COMPLETE views.py - With File Upload and Email
+# FIXED views.py - Proper File Upload Handling
 # ============================================
 
 from django.http import JsonResponse
@@ -8,20 +8,17 @@ from django.views.decorators.http import require_http_methods
 from django.core.mail import send_mail
 from django.conf import settings
 from django.utils import timezone
-from django.core.files.storage import default_storage
-from django.core.files.base import ContentFile
 import json
-import os
 
 
 # ============================================
-# SUBMIT APPLICATION WITH FILES AND EMAIL
+# SUBMIT APPLICATION - FIXED VERSION
 # ============================================
 
 @csrf_exempt
 @require_http_methods(["POST", "OPTIONS"])
 def submit_application(request):
-    """Submit job application with file uploads and email confirmation"""
+    """Submit job application with file uploads"""
     
     # Handle CORS preflight
     if request.method == "OPTIONS":
@@ -34,7 +31,7 @@ def submit_application(request):
     try:
         from .models import Application
         
-        # Get form data from POST (not JSON because we're uploading files)
+        # Get form data
         data = {
             'jobId': request.POST.get('jobId'),
             'jobTitle': request.POST.get('jobTitle'),
@@ -81,7 +78,6 @@ def submit_application(request):
         cv_file = request.FILES.get('cv')
         id_file = request.FILES.get('id_document')
         cert_file = request.FILES.get('certificate')
-        additional_files = request.FILES.getlist('additional_docs')
         
         # Validate required files
         if not cv_file:
@@ -90,25 +86,13 @@ def submit_application(request):
             return JsonResponse({'error': 'ID/Passport document is required'}, status=400)
         
         # Validate file sizes (5MB max)
-        for file in [cv_file, id_file, cert_file] + list(additional_files):
+        for file in [cv_file, id_file, cert_file]:
             if file and file.size > 5 * 1024 * 1024:
                 return JsonResponse({
                     'error': f'{file.name} is too large. Maximum size is 5MB per file.'
                 }, status=400)
         
-        # Save files
-        cv_path = save_application_file(cv_file, data['email'], 'cv')
-        id_path = save_application_file(id_file, data['email'], 'id')
-        cert_path = save_application_file(cert_file, data['email'], 'certificate') if cert_file else None
-        
-        # Save additional documents (max 3)
-        additional_paths = []
-        for i, doc in enumerate(additional_files[:3]):
-            path = save_application_file(doc, data['email'], f'additional_{i+1}')
-            if path:
-                additional_paths.append(path)
-        
-        # Create application in database
+      
         application = Application.objects.create(
             job_id=int(data['jobId']),
             job_title=data['jobTitle'],
@@ -118,16 +102,15 @@ def submit_application(request):
             age=int(data['age']),
             gender=data['gender'],
             kcse_grade=data['kcseGrade'],
-            cv_document=cv_path,
-            id_document=id_path,
-            certificate_document=cert_path,
-            additional_documents=','.join(additional_paths) if additional_paths else None,
+            cv_document=cv_file,
+            id_document=id_file,
+            certificate_document=cert_file if cert_file else None,  # Pass file object
             status='pending'
         )
         
         print(f"✅ Application saved successfully! ID: {application.id}")
         
-        # Send confirmation email to applicant
+        # Send confirmation email
         email_sent = False
         try:
             email_sent = send_confirmation_email(
@@ -138,15 +121,12 @@ def submit_application(request):
             )
             if email_sent:
                 print(f"📧 Confirmation email sent to {data['email']}")
-            else:
-                print(f"⚠️ Email failed to send to {data['email']}")
         except Exception as e:
-            print(f"⚠️ Email error (but application still saved): {e}")
-            # Don't fail the whole application if email fails
+            print(f"⚠️ Email error: {e}")
         
         return JsonResponse({
             'success': True,
-            'message': 'Application submitted successfully',
+            'message': 'Application submitted successfully!',
             'applicationId': application.id,
             'emailSent': email_sent
         }, status=201)
@@ -155,35 +135,10 @@ def submit_application(request):
         print(f"❌ ERROR: {str(e)}")
         import traceback
         traceback.print_exc()
-        return JsonResponse({'error': str(e)}, status=500)
-
-
-def save_application_file(file, email, doc_type):
-    """Save uploaded file and return path"""
-    if not file:
-        return None
-    
-    try:
-        # Create safe filename
-        timestamp = timezone.now().strftime('%Y%m%d_%H%M%S')
-        email_safe = email.replace('@', '_at_').replace('.', '_')
-        ext = os.path.splitext(file.name)[1].lower()
-        
-        # Validate file extension
-        allowed_extensions = ['.pdf', '.doc', '.docx', '.jpg', '.jpeg', '.png']
-        if ext not in allowed_extensions:
-            raise ValueError(f"File type {ext} not allowed")
-        
-        filename = f"applications/{email_safe}/{doc_type}_{timestamp}{ext}"
-        
-        # Save file
-        path = default_storage.save(filename, ContentFile(file.read()))
-        print(f"📁 Saved: {path} ({file.size / 1024:.1f} KB)")
-        return path
-        
-    except Exception as e:
-        print(f"❌ Error saving file {file.name}: {e}")
-        raise
+        return JsonResponse({
+            'error': 'Server error occurred while processing your application',
+            'details': str(e)
+        }, status=500)
 
 
 def send_confirmation_email(applicant_email, applicant_name, job_title, application_id):
@@ -203,39 +158,22 @@ We have successfully received your application and all supporting documents.
 • Position: {job_title}
 • Application ID: GT-{application_id}
 • Submitted: {timezone.now().strftime('%B %d, %Y at %I:%M %p')}
-• Documents: CV/Resume, ID/Passport, and supporting documents
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ✅ What's Next?
 
-Our recruitment team will carefully review your application and supporting 
-documents. If your qualifications match our requirements, we will contact 
-you within 5-7 business days to discuss the next steps in the recruitment 
-process.
-
-📧 Questions?
-
-If you have any questions about your application or the recruitment 
-process, please feel free to contact us:
-
-• Email: recruitment@greentara.co.ke
-• Phone: +254 700 123 456
-• Office Hours: Monday - Friday, 8:00 AM - 5:00 PM
-
-Thank you for your interest in joining Green Tara. We appreciate the 
-time you took to apply and wish you the best of luck!
+Our recruitment team will review your application. If your qualifications 
+match our requirements, we will contact you within 5-7 business days.
 
 Best regards,
-The Green Tara Recruitment Team
+Green Tara Recruitment Team
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🌿 Green Tara - Connecting Talent with Opportunity
+📧 Email: info@greentara.co.ke
+📞 Phone: +254 700 123 456
+🌐 Website: https://greentara-jobs.onrender.com
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-This is an automated confirmation email. Please do not reply directly 
-to this message. If you did not submit this application, please contact 
-us immediately at recruitment@greentara.co.ke
-    """
+"""
     
     try:
         send_mail(
@@ -247,13 +185,154 @@ us immediately at recruitment@greentara.co.ke
         )
         return True
     except Exception as e:
-        print(f"❌ Email send error: {e}")
+        print(f"Email sending failed: {e}")
         return False
 
 
 # ============================================
-# CHECK DUPLICATE APPLICATION
+# GET ALL JOBS
 # ============================================
+
+@require_http_methods(["GET"])
+def get_jobs(request):
+    """Get all active jobs"""
+    try:
+        from .models import Job
+        
+        jobs = Job.objects.filter(is_active=True).order_by('-created_at')
+        
+        jobs_list = []
+        for job in jobs:
+            jobs_list.append({
+                'id': job.id,
+                'title': job.title,
+                'location': job.location,
+                'salary': job.salary,
+                'contract': job.contract,
+                'icon': job.icon or '💼',
+                'description': job.description,
+                'responsibilities': job.responsibilities,
+                'requirements': job.requirements,
+                'benefits': job.benefits,
+                'workplace_photos': job.workplace_photos or [],
+                'expiry_date': job.expiry_date.isoformat() if job.expiry_date else None,
+                'created_at': job.created_at.isoformat(),
+            })
+        
+        return JsonResponse(jobs_list, safe=False)
+        
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+# ============================================
+# GET SINGLE JOB
+# ============================================
+
+@require_http_methods(["GET"])
+def get_job(request, job_id):
+    """Get a single job by ID"""
+    try:
+        from .models import Job
+        
+        job = Job.objects.get(id=job_id, is_active=True)
+        
+        return JsonResponse({
+            'id': job.id,
+            'title': job.title,
+            'location': job.location,
+            'salary': job.salary,
+            'contract': job.contract,
+            'icon': job.icon or '💼',
+            'description': job.description,
+            'responsibilities': job.responsibilities,
+            'requirements': job.requirements,
+            'benefits': job.benefits,
+            'workplace_photos': job.workplace_photos or [],
+            'expiry_date': job.expiry_date.isoformat() if job.expiry_date else None,
+            'created_at': job.created_at.isoformat(),
+        })
+        
+    except Job.DoesNotExist:
+        return JsonResponse({'error': 'Job not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+# ============================================
+# GET SITE CONTENT
+# ============================================
+
+@require_http_methods(["GET"])
+def get_site_content(request):
+    """Get site content"""
+    try:
+        from .models import SiteContent
+        
+        content, created = SiteContent.objects.get_or_create(pk=1)
+        
+        return JsonResponse({
+            'site_name': content.site_name,
+            'site_logo': content.site_logo.url if content.site_logo else None,
+            'hero_title': content.hero_title,
+            'hero_subtitle': content.hero_subtitle,
+            'about_text': content.about_text,
+            'contact_email': content.contact_email,
+            'contact_phone': content.contact_phone,
+        })
+        
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+# ============================================
+# GET ALL APPLICATIONS (for admin)
+# ============================================
+
+@require_http_methods(["GET"])
+def get_applications(request):
+    """Get all applications"""
+    if not request.user.is_authenticated or not request.user.is_staff:
+        return JsonResponse({'error': 'Unauthorized'}, status=401)
+    
+    try:
+        from .models import Application
+        
+        apps = Application.objects.all().order_by('-applied_at')
+        
+        apps_list = []
+        for app in apps:
+            apps_list.append({
+                'id': app.id,
+                'job_id': app.job_id,
+                'job_title': app.job_title,
+                'full_name': app.full_name,
+                'email': app.email,
+                'phone': app.phone,
+                'age': app.age,
+                'gender': app.gender,
+                'kcse_grade': app.kcse_grade,
+                'status': app.status,
+                'applied_at': app.applied_at.isoformat(),
+                'cv_url': app.cv_document.url if app.cv_document else None,
+                'id_url': app.id_document.url if app.id_document else None,
+                'cert_url': app.certificate_document.url if app.certificate_document else None,
+            })
+        
+        return JsonResponse(apps_list, safe=False)
+        
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+@require_http_methods(["GET"])
+def health_check(request):
+    """Simple health check endpoint"""
+    return JsonResponse({
+        'status': 'ok',
+        'message': 'Server is running',
+        'timestamp': timezone.now().isoformat()
+    })
+
 
 @csrf_exempt
 @require_http_methods(["GET", "OPTIONS"])
@@ -287,138 +366,6 @@ def check_application(request, job_id, email):
         return JsonResponse({'error': str(e)}, status=500)
 
 
-# ============================================
-# GET ALL JOBS (for frontend)
-# ============================================
-
-@require_http_methods(["GET"])
-def get_jobs(request):
-    """Get all active jobs"""
-    try:
-        from .models import Job
-        
-        # Filter active jobs only if requested
-        active_only = request.GET.get('active_only', 'false').lower() == 'true'
-        
-        if active_only:
-            jobs = Job.objects.filter(is_active=True)
-        else:
-            jobs = Job.objects.all()
-        
-        jobs_list = []
-        for job in jobs:
-            jobs_list.append({
-                'id': job.id,
-                'title': job.title,
-                'location': job.location,
-                'salary': job.salary,
-                'contract': job.contract,
-                'icon': job.icon or 'https://via.placeholder.com/60',
-                'description': job.description,
-                'responsibilities': job.responsibilities,
-                'requirements': job.requirements,
-                'benefits': job.benefits,
-                'workplace_photos': job.workplace_photos,
-                'expiry_date': job.expiry_date.isoformat() if job.expiry_date else None,
-                'is_active': job.is_active
-            })
-        
-        return JsonResponse(jobs_list, safe=False)
-        
-    except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500)
-
-
-# ============================================
-# HEALTH CHECK
-# ============================================
-
-@require_http_methods(["GET"])
-def health_check(request):
-    """Simple health check endpoint"""
-    return JsonResponse({
-        'status': 'ok',
-        'message': 'Server is running',
-        'timestamp': timezone.now().isoformat()
-    })
-# ADD THESE MISSING FUNCTIONS TO THE END OF YOUR views.py
-
-# ============================================
-# GET SINGLE JOB
-# ============================================
-
-@require_http_methods(["GET"])
-def get_job(request, job_id):
-    """Get a single job by ID"""
-    try:
-        from .models import Job
-        
-        job = Job.objects.get(id=job_id)
-        
-        return JsonResponse({
-            'id': job.id,
-            'title': job.title,
-            'location': job.location,
-            'salary': job.salary,
-            'contract': job.contract,
-            'icon': job.icon or 'https://via.placeholder.com/60',
-            'description': job.description,
-            'responsibilities': job.responsibilities,
-            'requirements': job.requirements,
-            'benefits': job.benefits,
-            'workplace_photos': job.workplace_photos,
-            'expiry_date': job.expiry_date.isoformat() if job.expiry_date else None,
-            'is_active': job.is_active
-        })
-        
-    except Job.DoesNotExist:
-        return JsonResponse({'error': 'Job not found'}, status=404)
-    except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500)
-
-
-# ============================================
-# GET SITE CONTENT
-# ============================================
-
-@require_http_methods(["GET"])
-def get_site_content(request):
-    """Get site content for frontend"""
-    try:
-        from .models import SiteContent
-        
-        content = SiteContent.objects.first()
-        
-        if content:
-            return JsonResponse({
-                'site_name': content.site_name,
-                'site_logo': content.site_logo.url if content.site_logo else None,
-                'hero_title': content.hero_title,
-                'hero_subtitle': content.hero_subtitle,
-                'about_text': content.about_text,
-                'contact_email': content.contact_email,
-                'contact_phone': content.contact_phone,
-            })
-        else:
-            # Return defaults if no content exists
-            return JsonResponse({
-                'site_name': 'Green Tara',
-                'site_logo': None,
-                'hero_title': 'Connecting Kenyans to trusted job opportunities',
-                'hero_subtitle': 'Browse verified listings locally and in Qatar',
-                'about_text': 'Green Tara helps job seekers connect to verified opportunities',
-                'contact_email': 'info@greentara.co.ke',
-                'contact_phone': '+254 700 123 456',
-            })
-            
-    except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500)
-
-
-# ============================================
-# ADMIN - LOGIN
-# ============================================
-
 @csrf_exempt
 @require_http_methods(["POST"])
 def admin_login(request):
@@ -448,10 +395,6 @@ def admin_login(request):
         return JsonResponse({'error': str(e)}, status=500)
 
 
-# ============================================
-# ADMIN - LOGOUT
-# ============================================
-
 @csrf_exempt
 @require_http_methods(["POST"])
 def admin_logout(request):
@@ -464,10 +407,6 @@ def admin_logout(request):
         return JsonResponse({'error': str(e)}, status=500)
 
 
-# ============================================
-# ADMIN - CHECK AUTH
-# ============================================
-
 @require_http_methods(["GET"])
 def admin_check(request):
     """Check if user is authenticated admin"""
@@ -479,10 +418,6 @@ def admin_check(request):
     else:
         return JsonResponse({'authenticated': False}, status=401)
 
-
-# ============================================
-# ADMIN - CHANGE PASSWORD
-# ============================================
 
 @csrf_exempt
 @require_http_methods(["POST"])
@@ -510,47 +445,6 @@ def change_password(request):
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
 
-
-# ============================================
-# ADMIN - GET ALL APPLICATIONS
-# ============================================
-
-@require_http_methods(["GET"])
-def get_applications(request):
-    """Get all applications for admin"""
-    if not request.user.is_authenticated or not request.user.is_staff:
-        return JsonResponse({'error': 'Unauthorized'}, status=401)
-    
-    try:
-        from .models import Application
-        
-        applications = Application.objects.all().order_by('-applied_at')
-        
-        apps_list = []
-        for app in applications:
-            apps_list.append({
-                'id': app.id,
-                'job_id': app.job_id,
-                'job_title': app.job_title,
-                'full_name': app.full_name,
-                'email': app.email,
-                'phone': app.phone,
-                'age': app.age,
-                'gender': app.gender,
-                'kcse_grade': app.kcse_grade,
-                'status': app.status,
-                'applied_at': app.applied_at.isoformat(),
-            })
-        
-        return JsonResponse(apps_list, safe=False)
-        
-    except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500)
-
-
-# ============================================
-# ADMIN - CREATE JOB
-# ============================================
 
 @csrf_exempt
 @require_http_methods(["POST"])
@@ -586,10 +480,6 @@ def create_job(request):
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
 
-
-# ============================================
-# ADMIN - UPDATE JOB
-# ============================================
 
 @csrf_exempt
 @require_http_methods(["PUT"])
@@ -627,10 +517,6 @@ def update_job(request, job_id):
         return JsonResponse({'error': str(e)}, status=500)
 
 
-# ============================================
-# ADMIN - DELETE JOB
-# ============================================
-
 @csrf_exempt
 @require_http_methods(["DELETE"])
 def delete_job(request, job_id):
@@ -653,10 +539,6 @@ def delete_job(request, job_id):
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
 
-
-# ============================================
-# ADMIN - UPDATE SITE CONTENT
-# ============================================
 
 @csrf_exempt
 @require_http_methods(["PUT"])
@@ -685,10 +567,6 @@ def update_site_content(request, key):
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
 
-
-# ============================================
-# ADMIN - GET ANALYTICS
-# ============================================
 
 @require_http_methods(["GET"])
 def get_analytics(request):
@@ -742,9 +620,7 @@ def get_analytics(request):
             'genderDistribution': gender_dist,
             'ageDistribution': age_groups,
             'applicationsByJob': apps_by_job,
-            'applicationsOverTime': []  # Add if needed
         })
         
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
-

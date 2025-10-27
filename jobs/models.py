@@ -1,4 +1,10 @@
-# COMPLETE models.py with all required fields
+
+# The issue is you're saving the PATH string instead of the FILE object.
+# Django's FileField expects a FILE object, not a string path.
+
+# ============================================
+# FIXED models.py - No duplicate fields
+# ============================================
 
 from django.db import models
 
@@ -17,7 +23,7 @@ class Job(models.Model):
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    status = models.CharField(max_length=20, default='pending')
+    status = models.CharField(max_length=20, default='active')
     
     class Meta:
         ordering = ['-created_at']
@@ -29,7 +35,7 @@ class Job(models.Model):
 
 
 class Application(models.Model):
-    STATUS_CHOICES = [  # STATUS_CHOICES goes HERE in Application model
+    STATUS_CHOICES = [
         ('pending', 'Pending Review'),
         ('reviewed', 'Reviewed'),
         ('shortlisted', 'Shortlisted'),
@@ -52,27 +58,22 @@ class Application(models.Model):
     certificate_document = models.FileField(upload_to='applications/certificates/', null=True, blank=True)
     additional_documents = models.TextField(null=True, blank=True)
     
-    # Status
+    # Status and Notes
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='pending')
     notes = models.TextField(blank=True, null=True)
     
-    # Metadata
+    # Metadata (NO DUPLICATES)
     applied_at = models.DateTimeField(auto_now_add=True)
-
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)  # Add this line
-    status = models.CharField(max_length=20, default='pending')
+    updated_at = models.DateTimeField(auto_now=True)
     
     class Meta:
         ordering = ['-applied_at']
-        unique_together = ['job_id', 'email']
         verbose_name = 'Job Application'
         verbose_name_plural = 'Job Applications'
     
     def __str__(self):
         return f"{self.full_name} - {self.job_title} ({self.status})"
-
-
     
     def get_additional_docs_list(self):
         """Return list of additional document paths"""
