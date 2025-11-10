@@ -293,6 +293,6 @@ class SiteContentAdmin(admin.ModelAdmin):
 # CUSTOMIZE ADMIN SITE
 # ============================================
 
-admin.site.site_header = "🌿 Green Tara Admin"
-admin.site.site_title = "Green Tara Admin"
+admin.site.site_header = "Nexus Recruitment Admin"
+admin.site.site_title = "Nexus Admin"
 admin.site.index_title = "Job Management Dashboard"
