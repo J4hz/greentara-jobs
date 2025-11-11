@@ -1,3 +1,4 @@
+
 # The issue is you're saving the PATH string instead of the FILE object.
 # Django's FileField expects a FILE object, not a string path.
 
