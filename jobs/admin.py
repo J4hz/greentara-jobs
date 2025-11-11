@@ -1,3 +1,4 @@
+
 # ============================================
 # FIXED admin.py - Shows Documents Properly
 # ============================================
@@ -296,3 +297,161 @@ class SiteContentAdmin(admin.ModelAdmin):
 admin.site.site_header = "Nexus Recruitment Admin"
 admin.site.site_title = "Nexus Admin"
 admin.site.index_title = "Job Management Dashboard"
+
+
+# ============================================
+# THEME CUSTOMIZATION ADMIN
+# ============================================
+
+from .models import SiteSettings, ColorPreset
+
+@admin.register(SiteSettings)
+class SiteSettingsAdmin(admin.ModelAdmin):
+    """Admin interface for site theme customization"""
+    
+    fieldsets = (
+        ('🎨 Theme Colors', {
+            'fields': (
+                'primary_color',
+                'primary_dark_color',
+                'background_color',
+                'header_background',
+                'gradient_start',
+                'gradient_end',
+            ),
+            'description': '⚙️ Customize your site colors using hex codes (e.g., #1e40af). Changes apply instantly to the frontend!',
+        }),
+        ('📊 Metadata', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    readonly_fields = ('created_at', 'updated_at')
+    
+    list_display = (
+        'id',
+        'color_preview',
+        'updated_at'
+    )
+    
+    def color_preview(self, obj):
+        """Display color swatches in the admin list view"""
+        return format_html(
+            '<div style="display: flex; gap: 5px; align-items: center;">'
+            '<span style="display: inline-block; width: 40px; height: 40px; '
+            'background: {}; border: 2px solid #ddd; border-radius: 6px;" '
+            'title="Primary: {}"></span>'
+            '<span style="display: inline-block; width: 40px; height: 40px; '
+            'background: {}; border: 2px solid #ddd; border-radius: 6px;" '
+            'title="Header: {}"></span>'
+            '<span style="display: inline-block; width: 40px; height: 40px; '
+            'background: {}; border: 2px solid #ddd; border-radius: 6px;" '
+            'title="Background: {}"></span>'
+            '<span style="color: #666; margin-left: 10px; font-weight: 600;">Current Theme</span>'
+            '</div>',
+            obj.primary_color, obj.primary_color,
+            obj.header_background, obj.header_background,
+            obj.background_color, obj.background_color,
+        )
+    color_preview.short_description = '🎨 Theme Preview'
+    
+    def has_add_permission(self, request):
+        """Only allow one instance of SiteSettings"""
+        if SiteSettings.objects.exists():
+            return False
+        return super().has_add_permission(request)
+    
+    def has_delete_permission(self, request, obj=None):
+        """Prevent deletion of site settings"""
+        return False
+
+
+@admin.register(ColorPreset)
+class ColorPresetAdmin(admin.ModelAdmin):
+    """Admin interface for managing color presets"""
+    
+    list_display = (
+        'name',
+        'color_preview',
+        'is_active',
+        'apply_preset_button',
+        'created_at'
+    )
+    
+    list_filter = ('is_active', 'created_at')
+    search_fields = ('name', 'description')
+    
+    fieldsets = (
+        ('Preset Information', {
+            'fields': ('name', 'description', 'is_active')
+        }),
+        ('Colors', {
+            'fields': (
+                'primary_color',
+                'primary_dark_color',
+                'background_color',
+                'header_background',
+                'gradient_start',
+                'gradient_end',
+            ),
+            'classes': ('wide',)
+        }),
+    )
+    
+    actions = ['apply_selected_preset']
+    
+    def color_preview(self, obj):
+        """Display color swatches for the preset"""
+        return format_html(
+            '<div style="display: flex; gap: 5px;">'
+            '<span style="display: inline-block; width: 35px; height: 35px; '
+            'background: {}; border: 2px solid #ddd; border-radius: 4px;"></span>'
+            '<span style="display: inline-block; width: 35px; height: 35px; '
+            'background: {}; border: 2px solid #ddd; border-radius: 4px;"></span>'
+            '<span style="display: inline-block; width: 35px; height: 35px; '
+            'background: {}; border: 2px solid #ddd; border-radius: 4px;"></span>'
+            '<span style="display: inline-block; width: 35px; height: 35px; '
+            'background: {}; border: 2px solid #ddd; border-radius: 4px;"></span>'
+            '</div>',
+            obj.primary_color,
+            obj.header_background,
+            obj.background_color,
+            obj.gradient_start,
+        )
+    color_preview.short_description = '🎨 Colors'
+    
+    def apply_preset_button(self, obj):
+        """Button to quickly apply a preset"""
+        if obj.is_active:
+            return format_html(
+                '<span style="color: green; font-weight: bold;">✓ Currently Active</span>'
+            )
+        return format_html(
+            '<button type="button" onclick="if(confirm(\'Apply {} theme to your site?\')) {{ '
+            'fetch(\'/api/admin/apply-preset/{}/\', {{method: \'POST\', headers: {{\'X-CSRFToken\': document.querySelector(\'[name=csrfmiddlewaretoken]\').value}}}}).then(() => location.reload()); }}" '
+            'style="background: #0a8a43; color: white; padding: 8px 16px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">'
+            '🎨 Apply This Theme</button>',
+            obj.name, obj.pk
+        )
+    apply_preset_button.short_description = 'Quick Apply'
+    
+    def apply_selected_preset(self, request, queryset):
+        """Admin action to apply a selected preset"""
+        if queryset.count() != 1:
+            self.message_user(
+                request,
+                "⚠️ Please select exactly one preset to apply.",
+                level='error'
+            )
+            return
+        
+        preset = queryset.first()
+        preset.apply_to_site()
+        
+        self.message_user(
+            request,
+            f'✅ Successfully applied "{preset.name}" theme to your site!',
+            level='success'
+        )
+    apply_selected_preset.short_description = "🎨 Apply selected preset to site"

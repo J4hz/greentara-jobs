@@ -1,3 +1,4 @@
+
 # ============================================
 # FIXED views.py - Proper File Upload Handling
 # ============================================
@@ -265,11 +266,14 @@ def get_job(request, job_id):
 
 @require_http_methods(["GET"])
 def get_site_content(request):
-    """Get site content"""
+    """Get site content including theme colors"""
     try:
-        from .models import SiteContent
+        from .models import SiteContent, SiteSettings
         
         content, created = SiteContent.objects.get_or_create(pk=1)
+        
+        # Get theme settings
+        theme_settings = SiteSettings.get_settings()
         
         return JsonResponse({
             'site_name': content.site_name,
@@ -279,6 +283,8 @@ def get_site_content(request):
             'about_text': content.about_text,
             'contact_email': content.contact_email,
             'contact_phone': content.contact_phone,
+            # Add theme colors to response
+            'theme': theme_settings.get_theme_dict(),
         })
         
     except Exception as e:
@@ -620,6 +626,95 @@ def get_analytics(request):
             'genderDistribution': gender_dist,
             'ageDistribution': age_groups,
             'applicationsByJob': apps_by_job,
+        })
+        
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+# ============================================
+# THEME CUSTOMIZATION ENDPOINTS
+# ============================================
+
+@require_http_methods(["GET"])
+def get_theme_colors(request):
+    """
+    Get current theme colors only.
+    Useful for quick theme updates without fetching all site content.
+    """
+    try:
+        from .models import SiteSettings
+        settings = SiteSettings.get_settings()
+        return JsonResponse({
+            'theme': settings.get_theme_dict()
+        })
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def apply_color_preset(request, preset_id):
+    """
+    Apply a color preset to the site.
+    Admin only endpoint.
+    """
+    if not request.user.is_authenticated or not request.user.is_staff:
+        return JsonResponse({'error': 'Unauthorized'}, status=401)
+    
+    try:
+        from .models import ColorPreset
+        from django.shortcuts import get_object_or_404
+        
+        preset = get_object_or_404(ColorPreset, pk=preset_id)
+        preset.apply_to_site()
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'Successfully applied "{preset.name}" theme!',
+            'theme': preset.primary_color
+        })
+        
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@csrf_exempt
+@require_http_methods(["PUT"])
+def update_theme_settings(request):
+    """
+    Update theme settings directly.
+    Admin only endpoint.
+    """
+    if not request.user.is_authenticated or not request.user.is_staff:
+        return JsonResponse({'error': 'Unauthorized'}, status=401)
+    
+    try:
+        from .models import SiteSettings
+        data = json.loads(request.body)
+        
+        settings = SiteSettings.get_settings()
+        
+        # Update colors if provided
+        if 'primary_color' in data:
+            settings.primary_color = data['primary_color']
+        if 'primary_dark_color' in data:
+            settings.primary_dark_color = data['primary_dark_color']
+        if 'background_color' in data:
+            settings.background_color = data['background_color']
+        if 'header_background' in data:
+            settings.header_background = data['header_background']
+        if 'gradient_start' in data:
+            settings.gradient_start = data['gradient_start']
+        if 'gradient_end' in data:
+            settings.gradient_end = data['gradient_end']
+        
+        settings.save()
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Theme updated successfully!',
+            'theme': settings.get_theme_dict()
         })
         
     except Exception as e:

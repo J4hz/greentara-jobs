@@ -27,6 +27,16 @@ urlpatterns = [
     path('api/content', views.get_site_content, name='get_site_content'),
     path('api/content/', views.get_site_content),
     
+    # Theme customization endpoints
+    path('api/theme-colors', views.get_theme_colors, name='get_theme_colors'),
+    path('api/theme-colors/', views.get_theme_colors),
+    
+    path('api/admin/apply-preset/<int:preset_id>', views.apply_color_preset, name='apply_color_preset'),
+    path('api/admin/apply-preset/<int:preset_id>/', views.apply_color_preset),
+    
+    path('api/admin/update-theme', views.update_theme_settings, name='update_theme_settings'),
+    path('api/admin/update-theme/', views.update_theme_settings),
+    
     # Admin API
     path('api/admin/login', views.admin_login),
     path('api/admin/login/', views.admin_login, name='admin_login'),
@@ -36,6 +46,4 @@ urlpatterns = [
     
     path('api/admin/check', views.admin_check),
     path('api/admin/check/', views.admin_check, name='admin_check'),
-    
-    # ... rest of your URLs with both versions
 ]

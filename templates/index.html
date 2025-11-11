@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,10 +8,14 @@
 
   <style>
     :root{
-      --green: #2f305c;
-      --green-dark: #2f305c;
-      --bg: #2e2d7f;
-      --card-shadow: rgba(10,10,10,0.08);
+      /* Blue theme colors - these will be dynamically injected from Django backend */
+      --primary: #1e40af;
+      --primary-dark: #1e3a8a;
+      --bg: #dbeafe;
+      --card-shadow: rgba(30,64,175,0.12);
+      --header-bg: #3b82f6;
+      --gradient-start: #2563eb;
+      --gradient-end: #1d4ed8;
     }
 
     *{box-sizing:border-box}
@@ -29,23 +34,23 @@
       top:0;
       left:0;
       right:0;
-      background:var(--blue);
-      color:#2b1f57;
+      background: var(--header-bg);
+      color:#ffffff;
       padding:12px 32px;
       z-index:1200;
-      box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+      box-shadow: 0 6px 18px rgba(59,130,246,0.25);
     }
     nav{display:flex;align-items:center;justify-content:space-between;gap:16px}
-    nav h1{font-size:20px;margin:0;font-weight:600}
+    nav h1{font-size:20px;margin:0;font-weight:600;color:#ffffff}
     nav ul{list-style:none;display:flex;gap:18px;margin:0;padding:0}
-    nav a{color:#03020a;text-decoration:none;font-weight:500;opacity:.95}
+    nav a{color:#ffffff;text-decoration:none;font-weight:500;opacity:.95}
     nav a:hover{opacity:1;text-decoration:underline}
 
     .hero{
       padding:120px 28px 40px;
       text-align:center;
     }
-    .hero h2{margin:0;font-size:2.4rem;color:var(--blue)}
+    .hero h2{margin:0;font-size:2.4rem;color:var(--primary)}
     .hero p{margin:12px 0 0;color:#555;font-size:1rem}
 
     .jobs{
@@ -53,7 +58,7 @@
       max-width:1200px;
       margin:0 auto;
     }
-    .jobs h2{color:var(--blue);margin-bottom:26px;font-size:1.8rem;text-align:center}
+    .jobs h2{color:var(--primary);margin-bottom:26px;font-size:1.8rem;text-align:center}
 
     .job-grid{
       display:grid;
@@ -73,17 +78,18 @@
       align-items:flex-start;
       gap:8px;
       cursor:pointer;
+      border: 1px solid rgba(59,130,246,0.1);
     }
-    .job-card:hover{ transform: translateY(-8px); box-shadow: 0 12px 30px rgba(0,0,0,0.12); }
+    .job-card:hover{ transform: translateY(-8px); box-shadow: 0 12px 30px rgba(59,130,246,0.2); }
 
-    .job-card img{ width:56px; height:56px; object-fit:contain; border-radius:8px; background:linear-gradient(180deg,#f3f7f3,#ffffff); padding:6px }
-    .job-card h3{ margin:6px 0 0; color:var(--green); font-size:1.05rem }
+    .job-card img{ width:56px; height:56px; object-fit:contain; border-radius:8px; background:linear-gradient(180deg,#eff6ff,#ffffff); padding:6px }
+    .job-card h3{ margin:6px 0 0; color:var(--primary); font-size:1.05rem }
     .meta{ color:#444; font-size:0.95rem; margin-top:6px; }
     .meta small{ display:block; color:#666; font-size:.88rem; margin-top:6px }
 
     .card-actions{ margin-top:auto; width:100%; display:flex; gap:10px; align-items:center; justify-content:flex-end }
     .view-btn{
-      background:var(--blue);
+      background: var(--primary);
       color:#fff;
       border:none;
       padding:9px 14px;
@@ -92,7 +98,7 @@
       font-weight:600;
       transition:.18s;
     }
-    .view-btn:hover{ background:var(--blue-dark) }
+    .view-btn:hover{ background:var(--primary-dark) }
 
     .loading{
       text-align:center;
@@ -101,7 +107,7 @@
       font-size:1.1rem;
     }
 
-    footer{ text-align:center; padding:20px 12px; color:#2d2a87; background:var(--blue); margin-top:30px; border-top-left-radius:8px; border-top-right-radius:8px }
+    footer{ text-align:center; padding:20px 12px; color:#ffffff; background:var(--header-bg); margin-top:30px; border-top-left-radius:8px; border-top-right-radius:8px }
 
     .modal {
       display:none;
@@ -133,7 +139,7 @@
 
     .modal-header{
       padding:18px 20px;
-      background: linear-gradient(135deg, #2f305c 0%, #2f305c 100%);
+      background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
       color:#ffffff;
       display:flex;
       align-items:center;
@@ -145,7 +151,7 @@
     .modal-close{
       background:transparent;
       border:none;
-      color:rgba(71, 88, 126, 0.95);
+      color:rgba(255, 255, 255, 0.95);
       font-size:20px;
       cursor:pointer;
       padding:8px;
@@ -164,7 +170,7 @@
     }
 
     .modal-body p{ margin:10px 0; color:#555 }
-    .modal-body .strong{ color:#2f305c; font-weight:700; display:block; margin-top:14px; margin-bottom:4px }
+    .modal-body .strong{ color:var(--primary); font-weight:700; display:block; margin-top:14px; margin-bottom:4px }
 
     .modal-footer{
       padding:18px 20px;
@@ -172,19 +178,19 @@
       gap:10px;
       align-items:center;
       justify-content:flex-end;
-      background: #213a53;
-      border-top: 1px solid #274563;
+      background: #eff6ff;
+      border-top: 1px solid #dbeafe;
     }
 
     .apply-btn{
-      background: linear-gradient(90deg, #2f305c, #2f305c);
+      background: linear-gradient(90deg, var(--gradient-start), var(--gradient-end));
       color:#fff;
       border:none;
       padding:10px 16px;
       border-radius:10px;
       cursor:pointer;
       font-weight:700;
-      box-shadow: 0 6px 18px rgba(6,109,52,0.18);
+      box-shadow: 0 6px 18px rgba(37,99,235,0.25);
       transition: transform .12s ease;
     }
     .apply-btn:active{ transform: translateY(1px); }
@@ -206,7 +212,7 @@
 
     .form-group label{
       display:block;
-      color:#2f305c;
+      color:var(--primary);
       font-weight:600;
       margin-bottom:6px;
       font-size:0.9rem;
@@ -226,8 +232,8 @@
     .form-group input:focus,
     .form-group select:focus{
       outline:none;
-      border-color:#2f305c;
-      box-shadow: 0 0 0 3px rgba(10,138,67,0.1);
+      border-color:var(--primary);
+      box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
     }
 
     .form-row{
@@ -272,429 +278,271 @@
     </nav>
   </header>
 
-  <main>
-    <section id="home" class="hero">
-      <h2 id="heroTitle">Connecting Kenyans to trusted job opportunities</h2>
-      <p id="heroSubtitle">Browse verified listings locally and in Qatar. Click any job to view details.</p>
-    </section>
+  <section id="home" class="hero">
+    <h2 id="heroTitle">Find Your Dream Job</h2>
+    <p id="heroSubtitle">Browse the latest opportunities and apply today</p>
+  </section>
 
-    <section id="jobs" class="jobs">
-      <h2>Available Jobs</h2>
-      
-      <div style="max-width: 600px; margin: 0 auto 30px;">
-        <div style="position: relative;">
-          <input 
-            type="text" 
-            id="jobSearch" 
-            placeholder="🔍 Search jobs by title, location, or keywords..." 
-            style="width: 100%; padding: 14px 20px; border: 2px solid #e0e0e0; border-radius: 50px; font-size: 15px;"
-            onkeyup="searchJobs()"
-          >
-        </div>
-        <p id="searchResults" style="text-align: center; color: #666; margin-top: 10px; font-size: 14px;"></p>
-      </div>
+  <section id="jobs" class="jobs">
+    <h2>Available Positions</h2>
+    
+    <div style="margin-bottom: 24px; max-width: 500px; margin-left: auto; margin-right: auto;">
+      <input 
+        type="text" 
+        id="jobSearch" 
+        placeholder="🔍 Search jobs by title, company, or location..." 
+        style="width: 100%; padding: 12px 18px; border: 2px solid var(--primary); border-radius: 12px; font-size: 1rem; transition: all 0.2s;"
+        oninput="searchJobs()"
+        onfocus="this.style.borderColor='var(--primary-dark)'; this.style.boxShadow='0 0 0 3px rgba(37,99,235,0.1)'"
+        onblur="this.style.borderColor='var(--primary)'; this.style.boxShadow='none'"
+      >
+    </div>
 
-      <div id="jobsContainer" class="job-grid">
-        <div class="loading">Loading jobs...</div>
-      </div>
-    </section>
-
-    <section id="about" class="jobs">
-      <h2>About Green Tara</h2>
-      <p id="aboutText" style="max-width:700px;margin:12px auto;color:#444;text-align:center">
-        Nexus Recruitment helps job seekers connect to verified opportunities with dignity and transparency.
-      </p>
-    </section>
-
-    <section id="contact" class="jobs">
-      <h2>Contact</h2>
-      <p style="max-width:600px;margin:12px auto;color:#444;text-align:center">
-        <strong style="color:#2f305c">Email:</strong> <span id="contactEmail">info@nexusrecruitment.co.ke</span><br>
-        <strong style="color:#2f305c">Phone:</strong> <span id="contactPhone">+254 720 268 486</span>
-      </p>
-    </section>
-  </main>
+    <div class="loading">Loading jobs...</div>
+    <div class="job-grid"></div>
+  </section>
 
   <footer>
-    © 2025 <span id="footerName">nexusrecruitment</span> – All rights reserved
+    <p>&copy; 2024 Nexus Recruitment. All Rights Reserved.</p>
   </footer>
 
-  <div id="jobModal" class="modal" aria-hidden="true">
+  <div id="jobModal" class="modal" aria-hidden="true" role="dialog">
     <div class="modal-card">
       <div class="modal-header">
         <h3 id="modalTitle"></h3>
-        <button class="modal-close">&times;</button>
+        <button class="modal-close" aria-label="Close">&times;</button>
       </div>
-      <div class="modal-body" id="modalBody"></div>
+      <div class="modal-body" id="modalContent"></div>
       <div class="modal-footer" id="modalFooter">
-        <button class="cancel-btn" type="button">Close</button>
-        <button class="apply-btn" type="button" id="applyBtn">Apply Now</button>
+        <button class="cancel-btn">Close</button>
+        <button class="apply-btn" id="applyBtn">Apply Now</button>
       </div>
     </div>
   </div>
 
   <script>
-    const API_URL = '/api';  // CHANGED: Django serves from same domain
-
-    let currentJob = null;
+    const API_URL = 'https://greentara-jobs.onrender.com';
     let allJobs = [];
+    let currentJob = null;
 
-    function renderJobs(jobs) {
-      const container = document.getElementById('jobsContainer');
+async function loadSiteContent() {
+  try {
+    const response = await fetch(`${API_URL}/site-content`);
+    if (response.ok) {
+      const content = await response.json();
       
-      if (!jobs || jobs.length === 0) {
-        container.innerHTML = '<div class="loading">No jobs available at the moment.</div>';
-        return;
+      // Update site name if provided
+      if (content.site_name) {
+        document.getElementById('siteName').textContent = content.site_name;
+        document.title = `${content.site_name} – Jobs`;
       }
-
-      container.innerHTML = jobs.map(job => {
-        const isExpired = job.expiry_date && new Date(job.expiry_date) < new Date();
-        const expiryDate = job.expiry_date ? new Date(job.expiry_date) : null;
-        const daysLeft = expiryDate ? Math.ceil((expiryDate - new Date()) / (1000 * 60 * 60 * 24)) : null;
+      
+      // Update logo if provided
+      if (content.logo_url) {
+        const logoEl = document.getElementById('siteLogo');
+        logoEl.src = content.logo_url;
+        logoEl.style.display = 'block';
+      }
+      
+      // Update hero section
+      if (content.hero_title) {
+        document.getElementById('heroTitle').textContent = content.hero_title;
+      }
+      if (content.hero_subtitle) {
+        document.getElementById('heroSubtitle').textContent = content.hero_subtitle;
+      }
+      
+      // Apply dynamic theme colors from backend
+      if (content.theme) {
+        const root = document.documentElement;
+        const theme = content.theme;
         
-        let expiryBadge = '';
-        if (isExpired) {
-          expiryBadge = '<div style="background: #dc3545; color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; display: inline-block; margin-top: 8px;">❌ Expired</div>';
-        } else if (daysLeft !== null && daysLeft <= 7) {
-          expiryBadge = `<div style="background: #ff9800; color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; display: inline-block; margin-top: 8px;">⏰ ${daysLeft} days left</div>`;
-        }
-
-        return `
-        <article class="job-card ${isExpired ? 'expired-job' : ''}" data-job-id="${job.id}" style="${isExpired ? 'opacity: 0.6;' : ''}">
-          <img src="${job.icon}" alt="" />
-          <h3>${job.title}</h3>
-          <div class="meta"><strong>Location:</strong> ${job.location}</div>
-          <div class="meta"><strong>Salary:</strong> ${job.salary}</div>
-          <small>Contract: ${job.contract}</small>
-          ${expiryBadge}
-          <div class="card-actions">
-            <button class="view-btn" ${isExpired ? 'disabled' : ''}>
-              ${isExpired ? 'Expired' : 'View Details'}
-            </button>
-          </div>
-        </article>
-      `;
-      }).join('');
-
-      container.querySelectorAll('.job-card:not(.expired-job)').forEach(card => {
-        card.addEventListener('click', () => {
-          const jobId = parseInt(card.dataset.jobId);
-          const job = jobs.find(j => j.id === jobId);
-          if (job) openModal(job);
-        });
-      });
+        if (theme.primary) root.style.setProperty('--primary', theme.primary);
+        if (theme.primary_dark) root.style.setProperty('--primary-dark', theme.primary_dark);
+        if (theme.background) root.style.setProperty('--bg', theme.background);
+        if (theme.header_bg) root.style.setProperty('--header-bg', theme.header_bg);
+        if (theme.gradient_start) root.style.setProperty('--gradient-start', theme.gradient_start);
+        if (theme.gradient_end) root.style.setProperty('--gradient-end', theme.gradient_end);
+        
+        console.log('✅ Theme colors applied from backend');
+      }
+      
+      console.log('✅ Site content loaded successfully');
     }
+  } catch (error) {
+    console.error('Error loading site content:', error);
+  }
+}
 
     async function loadJobs() {
       try {
         const response = await fetch(`${API_URL}/jobs?active_only=true`);
-        if (response.ok) {
-          const jobs = await response.json();
-          allJobs = jobs;
-          renderJobs(jobs);
-        }
+        if (!response.ok) throw new Error('Failed to fetch jobs');
+        
+        allJobs = await response.json();
+        renderJobs(allJobs);
       } catch (error) {
         console.error('Error loading jobs:', error);
+        document.querySelector('.loading').textContent = 'Error loading jobs. Please try again later.';
       }
     }
 
-    function searchJobs() {
-      const searchTerm = document.getElementById('jobSearch').value.toLowerCase();
-      
-      if (searchTerm) {
-        const filtered = allJobs.filter(job => 
-          job.title.toLowerCase().includes(searchTerm) ||
-          job.location.toLowerCase().includes(searchTerm) ||
-          (job.description && job.description.toLowerCase().includes(searchTerm))
-        );
-        renderJobs(filtered);
-        document.getElementById('searchResults').textContent = `Showing ${filtered.length} of ${allJobs.length} jobs`;
-      } else {
-        renderJobs(allJobs);
-        document.getElementById('searchResults').textContent = `${allJobs.length} jobs available`;
+    function renderJobs(jobs) {
+      const loadingEl = document.querySelector('.loading');
+      const gridEl = document.querySelector('.job-grid');
+
+      if (jobs.length === 0) {
+        loadingEl.textContent = 'No jobs available at the moment.';
+        gridEl.innerHTML = '';
+        return;
       }
+
+      loadingEl.style.display = 'none';
+      gridEl.innerHTML = jobs.map(job => `
+        <div class="job-card" onclick="openJobModal(${job.id})">
+          <img src="${job.company_logo || 'https://via.placeholder.com/56'}" alt="${job.company} logo">
+          <h3>${job.title}</h3>
+          <div class="meta">
+            <strong>${job.company}</strong>
+            <small>📍 ${job.location} • 💰 ${job.salary || 'Competitive'}</small>
+          </div>
+          <div class="card-actions">
+            <button class="view-btn" onclick="event.stopPropagation(); openJobModal(${job.id})">View Details</button>
+          </div>
+        </div>
+      `).join('');
     }
 
-    async function loadSiteContent() {
-      try {
-        const response = await fetch(`${API_URL}/content`);
-        if (response.ok) {
-          const content = await response.json();
-          
-          if (content.site_name) {
-            document.getElementById('siteName').textContent = content.site_name;
-            document.getElementById('footerName').textContent = content.site_name;
-          }
-          if (content.hero_title) document.getElementById('heroTitle').textContent = content.hero_title;
-          if (content.hero_subtitle) document.getElementById('heroSubtitle').textContent = content.hero_subtitle;
-          if (content.about_text) document.getElementById('aboutText').textContent = content.about_text;
-          if (content.contact_email) document.getElementById('contactEmail').textContent = content.contact_email;
-          if (content.contact_phone) document.getElementById('contactPhone').textContent = content.contact_phone;
-          if (content.site_logo) {
-            const logoImg = document.getElementById('siteLogo');
-            logoImg.src = content.site_logo;  // CHANGED: Removed localhost prefix
-            logoImg.style.display = 'block';
-          }
-        }
-      } catch (error) {
-        console.log('Using default content');
-      }
-    }
+function searchJobs() {
+  const searchTerm = document.getElementById('jobSearch').value.toLowerCase().trim();
+  
+  if (!searchTerm) {
+    renderJobs(allJobs);
+    return;
+  }
+  
+  const filtered = allJobs.filter(job => {
+    return (
+      job.title.toLowerCase().includes(searchTerm) ||
+      job.company.toLowerCase().includes(searchTerm) ||
+      job.location.toLowerCase().includes(searchTerm) ||
+      (job.description && job.description.toLowerCase().includes(searchTerm))
+    );
+  });
+  
+  renderJobs(filtered);
+}
 
-    function openModal(job) {
-      currentJob = job;
-      const modal = document.getElementById('jobModal');
-      const modalTitle = document.getElementById('modalTitle');
-      const modalBody = document.getElementById('modalBody');
+    function openJobModal(jobId) {
+      currentJob = allJobs.find(j => j.id === jobId);
+      if (!currentJob) return;
 
-      modalTitle.textContent = job.title;
-      
-      let workplacePhotosHTML = '';
-      if (job.workplace_photos) {
-        try {
-          const photos = JSON.parse(job.workplace_photos);
-          if (photos && photos.length > 0) {
-            workplacePhotosHTML = `
-              <span class="strong">Workplace Photos</span>
-              <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; margin: 10px 0 20px 0;">
-                ${photos.map(photo => `
-                  <img src="${photo}" alt="Workplace" style="width: 100%; height: 120px; object-fit: cover; border-radius: 8px; border: 2px solid #e0e0e0;">
-                `).join('')}
-              </div>
-            `;
-          }
-        } catch (e) {
-          console.error('Error parsing photos:', e);
-        }
-      }
-
-      modalBody.innerHTML = `
-        <span class="strong">Location</span>
-        <p>${job.location}</p>
-        <span class="strong">Salary</span>
-        <p>${job.salary} (Contract: ${job.contract})</p>
-        ${workplacePhotosHTML}
-        <span class="strong">Description</span>
-        <p>${job.description}</p>
-        <span class="strong">Responsibilities</span>
-        <p>${job.responsibilities}</p>
-        <span class="strong">Requirements</span>
-        <p>${job.requirements}</p>
-        <span class="strong">Benefits</span>
-        <p>${job.benefits}</p>
+      document.getElementById('modalTitle').textContent = currentJob.title;
+      document.getElementById('modalContent').innerHTML = `
+        <p><span class="strong">Company:</span> ${currentJob.company}</p>
+        <p><span class="strong">Location:</span> ${currentJob.location}</p>
+        <p><span class="strong">Salary:</span> ${currentJob.salary || 'Competitive salary'}</p>
+        <p><span class="strong">Description:</span></p>
+        <p>${currentJob.description || 'No description provided.'}</p>
+        <p><span class="strong">Requirements:</span></p>
+        <p>${currentJob.requirements || 'See job description for details.'}</p>
       `;
 
-      modal.setAttribute('aria-hidden', 'false');
-      document.body.style.overflow = 'hidden';
+      document.getElementById('jobModal').setAttribute('aria-hidden', 'false');
     }
 
     function closeModal() {
-      const modal = document.getElementById('jobModal');
-      modal.setAttribute('aria-hidden', 'true');
-      document.body.style.overflow = '';
+      document.getElementById('jobModal').setAttribute('aria-hidden', 'true');
       currentJob = null;
     }
 
-    function showApplicationForm() {
-         if (!currentJob) {
-    alert('❌ No job selected. Please try again.');
-    return;
-  }
+function showApplicationForm() {
+  if (!currentJob) return;
 
-  const modalBody = document.getElementById('modalBody');
-  const modalFooter = document.getElementById('modalFooter');
-  
-  modalBody.innerHTML = `
-    <form class="application-form" id="applicationForm" enctype="multipart/form-data">
-      <h4 style="color:#0a8a43; margin-top:0">Apply for ${currentJob.title}</h4>
-      
-      <div class="form-group">
-        <label for="fullName">Full Name *</label>
-        <input type="text" id="fullName" required placeholder="Enter your full name">
-      </div>
-
+  document.getElementById('modalContent').innerHTML = `
+    <form id="applicationForm" enctype="multipart/form-data">
       <div class="form-row">
+        <div class="form-group">
+          <label for="fullName">Full Name *</label>
+          <input type="text" id="fullName" name="fullName" required>
+        </div>
         <div class="form-group">
           <label for="email">Email Address *</label>
-          <input type="email" id="email" required placeholder="your.email@example.com" 
-                 onblur="checkPreviousApplication()">
+          <input type="email" id="email" name="email" required>
         </div>
-        
-        <div class="form-group">
-          <label for="phone">Phone Number *</label>
-          <input type="tel" id="phone" required placeholder="+254 700 000 000">
-        </div>
-      </div>
-
-      <div id="duplicateWarning" style="display:none; background:#fff3cd; border:1px solid #ffc107; padding:12px; border-radius:8px; margin:10px 0; color:#856404;">
-        <strong>⚠️ Notice:</strong> <span id="duplicateMessage"></span>
       </div>
 
       <div class="form-row">
         <div class="form-group">
-          <label for="age">Age *</label>
-          <input type="number" id="age" required min="18" max="65" placeholder="25">
+          <label for="phone">Phone Number *</label>
+          <input type="tel" id="phone" name="phone" required>
         </div>
-        
+        <div class="form-group">
+          <label for="age">Age *</label>
+          <input type="number" id="age" name="age" min="18" max="65" required>
+        </div>
+      </div>
+
+      <div class="form-row">
         <div class="form-group">
           <label for="gender">Gender *</label>
-          <select id="gender" required>
-            <option value="">Select gender</option>
+          <select id="gender" name="gender" required>
+            <option value="">Select Gender</option>
             <option value="Male">Male</option>
             <option value="Female">Female</option>
             <option value="Other">Other</option>
-            <option value="Prefer not to say">Prefer not to say</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="kcseGrade">KCSE Grade *</label>
+          <select id="kcseGrade" name="kcseGrade" required>
+            <option value="">Select Grade</option>
+            <option value="A">A</option>
+            <option value="A-">A-</option>
+            <option value="B+">B+</option>
+            <option value="B">B</option>
+            <option value="B-">B-</option>
+            <option value="C+">C+</option>
+            <option value="C">C</option>
+            <option value="C-">C-</option>
+            <option value="D+">D+</option>
+            <option value="D">D</option>
+            <option value="D-">D-</option>
+            <option value="E">E</option>
           </select>
         </div>
       </div>
 
       <div class="form-group">
-        <label for="kcseGrade">KCSE Grade *</label>
-        <select id="kcseGrade" required>
-          <option value="">Select your KCSE grade</option>
-          <option value="A">A</option>
-          <option value="A-">A-</option>
-          <option value="B+">B+</option>
-          <option value="B">B</option>
-          <option value="B-">B-</option>
-          <option value="C+">C+</option>
-          <option value="C">C</option>
-          <option value="C-">C-</option>
-          <option value="D+">D+</option>
-          <option value="D">D</option>
-          <option value="D-">D-</option>
-          <option value="E">E</option>
-        </select>
+        <label for="cvUpload">Upload CV/Resume * (PDF, DOC, DOCX - Max 5MB)</label>
+        <input type="file" id="cvUpload" name="cv" accept=".pdf,.doc,.docx" required 
+               style="padding: 8px; border: 2px dashed var(--primary); background: #f8f9fa;">
       </div>
 
-      <!-- FILE UPLOADS SECTION -->
-      <div style="background: #f9fdf9; padding: 15px; border-radius: 8px; border: 2px dashed #0a8a43; margin: 20px 0;">
-        <h4 style="color: #0a8a43; margin-top: 0; font-size: 1rem;">📎 Upload Documents</h4>
-        
-        <!-- CV/Resume Upload -->
-        <div class="form-group">
-          <label for="cvUpload">📄 CV/Resume (Required) *</label>
-          <input 
-            type="file" 
-            id="cvUpload" 
-            required
-            accept=".pdf,.doc,.docx"
-            style="padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px; background: white; width: 100%;"
-          >
-          <small style="display:block; margin-top:5px; color:#666;">
-            PDF, DOC or DOCX • Max 5MB
-          </small>
-          <div id="cvPreview" style="margin-top: 8px; color: #0a8a43; font-weight: 600;"></div>
-        </div>
-
-        <!-- ID/Passport Upload -->
-        <div class="form-group">
-          <label for="idUpload">🪪 National ID or Passport (Required) *</label>
-          <input 
-            type="file" 
-            id="idUpload" 
-            required
-            accept=".pdf,.jpg,.jpeg,.png"
-            style="padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px; background: white; width: 100%;"
-          >
-          <small style="display:block; margin-top:5px; color:#666;">
-            PDF or Image • Max 5MB
-          </small>
-          <div id="idPreview" style="margin-top: 8px; color: #0a8a43; font-weight: 600;"></div>
-        </div>
-
-        <!-- Certificate Upload -->
-        <div class="form-group">
-          <label for="certificateUpload">📜 KCSE Certificate (Optional)</label>
-          <input 
-            type="file" 
-            id="certificateUpload"
-            accept=".pdf,.jpg,.jpeg,.png"
-            style="padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px; background: white; width: 100%;"
-          >
-          <small style="display:block; margin-top:5px; color:#666;">
-            PDF or Image • Max 5MB
-          </small>
-          <div id="certificatePreview" style="margin-top: 8px; color: #0a8a43; font-weight: 600;"></div>
-        </div>
-
-        <!-- Additional Documents -->
-        <div class="form-group">
-          <label for="additionalDocs">📎 Additional Documents (Optional)</label>
-          <input 
-            type="file" 
-            id="additionalDocs" 
-            multiple
-            accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
-            style="padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px; background: white; width: 100%;"
-          >
-          <small style="display:block; margin-top:5px; color:#666;">
-            Certificates, recommendations, etc. • Max 3 files, 5MB each
-          </small>
-          <div id="additionalPreview" style="margin-top: 8px; color: #0a8a43; font-weight: 600;"></div>
-        </div>
+      <div class="form-group">
+        <label for="idUpload">Upload National ID or Passport * (PDF, JPG, PNG - Max 5MB)</label>
+        <input type="file" id="idUpload" name="id_document" accept=".pdf,.jpg,.jpeg,.png" required
+               style="padding: 8px; border: 2px dashed var(--primary); background: #f8f9fa;">
       </div>
 
-      <div style="background: #e3f2fd; padding: 12px; border-radius: 8px; border-left: 4px solid #2196F3;">
-        <small style="color: #1565c0;">
-          <strong>📧 Email Confirmation:</strong> You will receive an email confirmation at the address you provided once your application is submitted successfully.
-        </small>
+      <div class="form-group">
+        <label for="certificateUpload">Upload Certificate (Optional - PDF, JPG, PNG - Max 5MB)</label>
+        <input type="file" id="certificateUpload" name="certificate" accept=".pdf,.jpg,.jpeg,.png"
+               style="padding: 8px; border: 2px dashed #ddd; background: #f8f9fa;">
+      </div>
+
+      <div class="form-group">
+        <label for="additionalDocs">Additional Documents (Optional - Multiple files allowed)</label>
+        <input type="file" id="additionalDocs" name="additional_docs" multiple accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+               style="padding: 8px; border: 2px dashed #ddd; background: #f8f9fa;">
       </div>
     </form>
   `;
 
-  // Add file preview handlers
-  ['cvUpload', 'idUpload', 'certificateUpload'].forEach(id => {
-    const input = document.getElementById(id);
-    const preview = document.getElementById(id.replace('Upload', 'Preview'));
-    
-    input.addEventListener('change', (e) => {
-      const file = e.target.files[0];
-      if (file) {
-        if (file.size > 5 * 1024 * 1024) {
-          alert(`❌ ${file.name} is too large. Maximum size is 5MB.`);
-          e.target.value = '';
-          preview.textContent = '';
-          return;
-        }
-        preview.textContent = `✅ ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
-      } else {
-        preview.textContent = '';
-      }
-    });
-  });
-
-  document.getElementById('additionalDocs').addEventListener('change', (e) => {
-    const files = e.target.files;
-    const preview = document.getElementById('additionalPreview');
-    
-    if (files.length > 3) {
-      alert('❌ Maximum 3 additional documents allowed.');
-      e.target.value = '';
-      preview.textContent = '';
-      return;
-    }
-    
-    let valid = true;
-    for (let file of files) {
-      if (file.size > 5 * 1024 * 1024) {
-        alert(`❌ ${file.name} is too large. Maximum size is 5MB per file.`);
-        e.target.value = '';
-        preview.textContent = '';
-        valid = false;
-        break;
-      }
-    }
-    
-    if (valid && files.length > 0) {
-      preview.textContent = `✅ ${files.length} file(s) selected`;
-    } else {
-      preview.textContent = '';
-    }
-  });
-
-  modalFooter.innerHTML = `
-    <button class="cancel-btn" type="button" onclick="closeModal()">Cancel</button>
+  document.getElementById('modalFooter').innerHTML = `
+    <button class="cancel-btn" type="button" onclick="openJobModal(${currentJob.id})">
+      ← Back to Job
+    </button>
     <button class="apply-btn" type="button" onclick="submitApplication()" id="submitAppBtn">
       Submit Application
     </button>
@@ -910,11 +758,11 @@ function showNotification(message) {
     position: fixed;
     top: 80px;
     right: 20px;
-    background: linear-gradient(135deg, #0a8a43, #066d34);
+    background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
     color: white;
     padding: 12px 20px;
     border-radius: 8px;
-    box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+    box-shadow: 0 6px 20px rgba(37,99,235,0.3);
     z-index: 9999;
     font-size: 14px;
     font-weight: 600;
@@ -963,10 +811,10 @@ setInterval(autoRefreshJobs, 30000);
 console.log('✅ Auto-refresh enabled - Jobs will update every 30 seconds');
 console.log('🔄 Make changes in admin dashboard and they will appear within 30 seconds!');
 
-// Also refresh when user comes back to the tab (if they were away)
+// Also refresh when user comes back to the tab
 document.addEventListener('visibilitychange', () => {
   if (!document.hidden) {
-    console.log('👀 User returned to tab - checking for updates...');
+    console.log('👀 Tab visible - checking for updates...');
     autoRefreshJobs();
   }
 });
