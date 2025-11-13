@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Nexus Recruitment</title>
+  <title>Green Tara – Jobs</title>
 
   <style>
     :root{
@@ -326,7 +326,7 @@
 
 async function loadSiteContent() {
   try {
-    const response = await fetch(`${API_URL}/site-content`);
+    const response = await fetch(`${API_URL}/api/content`);
     if (response.ok) {
       const content = await response.json();
       
@@ -375,7 +375,7 @@ async function loadSiteContent() {
 
     async function loadJobs() {
       try {
-        const response = await fetch(`${API_URL}/jobs?active_only=true`);
+        const response = await fetch(`${API_URL}/api/jobs?active_only=true`);
         if (!response.ok) throw new Error('Failed to fetch jobs');
         
         allJobs = await response.json();
@@ -629,7 +629,7 @@ async function submitApplication() {
     console.log('📤 Submitting application with files...');
     submitBtn.textContent = '📧 Submitting...';
 
-    const response = await fetch(`${API_URL}/applications`, {
+    const response = await fetch(`${API_URL}/api/applications`, {
       method: 'POST',
       body: formData  // Don't set Content-Type - browser sets it automatically with boundary
     });
@@ -708,7 +708,7 @@ async function autoRefreshJobs() {
   try {
     // Add timestamp to prevent caching
     const timestamp = Date.now();
-    const response = await fetch(`${API_URL}/jobs?active_only=true&_t=${timestamp}`, {
+    const response = await fetch(`${API_URL}/api/jobs?active_only=true&_t=${timestamp}`, {
       cache: 'no-store',
       headers: {
         'Cache-Control': 'no-cache',
